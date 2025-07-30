@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import * as api from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -8,25 +9,39 @@ import { User } from '@/lib/types';
 
 const AdminPanel = () => {
   const { token, logout } = useAuth();
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [adminForm, setAdminForm] = useState({ username: '', password: '' });
   const [newUserForm, setNewUserForm] = useState({ username: '', password: '' });
   const [permissionForms, setPermissionForms] = useState<{ [key: number]: string }>({});
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [allFolders, setAllFolders] = useState<string[]>([]);
 
   const fetchUsers = async () => {
     if (!token) return;
     try {
-      const userList = await api.getUsers(token);
-      setUsers(userList);
+      const userData = await api.getUsers(token);
+      setUsers(userData);
     } catch (err: any) {
-      setError(`Failed to fetch users: ${err.message}`);
+      setError(err.message);
+    }
+  };
+
+  const fetchAllFolders = async () => {
+    if (!token) return;
+    try {
+      const folderData = await api.getAllFolders(token);
+      setAllFolders(folderData.folders || []);
+    } catch (err: any) {
+      // Non-critical error, so just log it or show a subtle warning
+      console.error(`Failed to fetch folder list: ${err.message}`);
     }
   };
 
   useEffect(() => {
     fetchUsers();
+    fetchAllFolders();
   }, [token]);
 
   const showMessage = (msg: string) => {
@@ -165,6 +180,7 @@ const AdminPanel = () => {
 
               <form onSubmit={(e) => handleAddPermission(e, user.ID)} className="flex items-center space-x-2">
                 <input
+                  list="folder-suggestions"
                   type="text"
                   value={permissionForms[user.ID] || ''}
                   onChange={(e) => handlePermissionFormChange(user.ID, e.target.value)}
@@ -172,6 +188,11 @@ const AdminPanel = () => {
                   className="flex-grow p-2 border rounded bg-gray-600 border-gray-500 text-sm"
                   required
                 />
+                <datalist id="folder-suggestions">
+                  {allFolders.map(folder => (
+                    <option key={folder} value={folder} />
+                  ))}
+                </datalist>
                 <button type="submit" className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700">Add</button>
               </form>
             </div>

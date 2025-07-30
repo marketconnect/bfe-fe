@@ -1,4 +1,4 @@
-import { User, LoginResponse, CreateUserResponse, MessageResponse, GetFilesResponse } from './types';
+import { User, LoginResponse, CreateUserResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse } from './types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const BASE_PATH = `${API_URL}/api/v1`;
@@ -65,8 +65,10 @@ export const assignPermission = async (
   return response.json();
 };
 
-export const getFiles = async (token: string): Promise<GetFilesResponse> => {
-  const response = await fetch(`${BASE_PATH}/files`, {
+export const getFiles = async (token: string, path: string = ''): Promise<GetFilesResponse> => {
+  const url = new URL(`${BASE_PATH}/files`);
+  if (path) url.searchParams.append('path', path);
+  const response = await fetch(url.toString(), {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -75,6 +77,21 @@ export const getFiles = async (token: string): Promise<GetFilesResponse> => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
     throw new Error(error.message || 'Failed to fetch files');
+  }
+
+  return response.json();
+};
+
+export const getAllFolders = async (token: string): Promise<GetAllFoldersResponse> => {
+    const response = await fetch(`${BASE_PATH}/admin/storage/folders`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
+    throw new Error(error.message || 'Failed to fetch folders');
   }
 
   return response.json();

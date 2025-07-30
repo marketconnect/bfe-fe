@@ -30,9 +30,17 @@ export interface MessageResponse {
   message: string;
 }
 
+export interface FileWithURL {
+  key: string;
+  url: string;
+}
+
 export interface GetFilesResponse {
-  files: Array<{
-    key: string;
-    url: string;
-  }>;
+  path: string;
+  folders: string[];
+  files: FileWithURL[];
+}
+
+export interface GetAllFoldersResponse {
+  folders: string[];
 }
