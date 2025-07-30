@@ -1,0 +1,154 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export interface Permission {
+  ID: number;
+  UserID: number;
+  FolderPrefix: string;
+  CreatedAt: string;
+}
+
+export interface User {
+  ID: number;
+  Username: string;
+  IsAdmin: boolean;
+  Permissions: Permission[];
+  CreatedAt: string;
+}
+
+interface LoginResponse {
+  token: string;
+}
+
+interface CreateUserResponse {
+  user_id: number;
+}
+
+interface GetPresignedUrlsResponse {
+  files: Array<{
+    key: string;
+    url: string;
+  }>;
+}
+
+interface MessageResponse {
+  message: string;
+}
+
+export const login = async (username: string, password: string): Promise<string> => {
+  const response = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to login');
+  }
+
+  const data: LoginResponse = await response.json();
+  return data.token;
+};
+
+export const createUser = async (token: string, username: string, password: string, isAdmin: boolean): Promise<CreateUserResponse> => {
+  const response = await fetch(`${API_URL}/admin/users`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ username, password, is_admin: isAdmin }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create user');
+  }
+
+  return response.json();
+};
+
+export const assignPermission = async (token: string, userId: number, folderPrefix: string): Promise<{ message: string }> => {
+  const response = await fetch(`${API_URL}/admin/permissions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ user_id: userId, folder_prefix: folderPrefix }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to assign permission');
+  }
+
+  return response.json();
+};
+
+export const getUsers = async (token: string): Promise<User[]> => {
+  const response = await fetch(`${API_URL}/admin/users`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to fetch users');
+  }
+
+  return response.json();
+};
+
+export const deleteUser = async (token: string, userId: number): Promise<MessageResponse> => {
+  const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to delete user');
+  }
+
+  return response.json();
+};
+
+export const revokePermission = async (token: string, permissionId: number): Promise<MessageResponse> => {
+  const response = await fetch(`${API_URL}/admin/permissions/${permissionId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to revoke permission');
+  }
+
+  return response.json();
+};
+
+export const updateAdminSelf = async (token: string, data: { username?: string; password?: string }): Promise<MessageResponse> => {
+  const response = await fetch(`${API_URL}/admin/self`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update admin account');
+  }
+
+  return response.json();
+};
