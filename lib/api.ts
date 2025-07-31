@@ -24,6 +24,7 @@ export const createUser = async (
   token: string,
   username: string,
   password: string,
+  alias: string,
   isAdmin: boolean
 ): Promise<CreateUserResponse> => {
   const response = await fetch(`${BASE_PATH}/admin/users`, {
@@ -32,7 +33,7 @@ export const createUser = async (
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ username, password, is_admin: isAdmin }),
+    body: JSON.stringify({ username, password, alias, is_admin: isAdmin }),
   });
 
   if (!response.ok) {

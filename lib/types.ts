@@ -13,6 +13,7 @@ export interface User {
   UpdatedAt: string;
   DeletedAt: string | null;
   Username: string;
+  Alias: string;
   IsAdmin: boolean;
   Permissions: Permission[];
 }

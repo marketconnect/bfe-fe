@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -18,11 +29,12 @@
 body { @apply bg-white text-[#222222]; }
 .btn-primary {
   @apply bg-gradient-to-r from-bfe-orange-light to-bfe-orange text-white
-         font-bold rounded-md px-4 py-2 shadow hover:brightness-90;
+         font-bold rounded-md px-4 py-2 shadow hover:brightness-90
+         transition-all duration-200;
 }
 .btn-secondary {
   @apply text-bfe-green border border-bfe-green rounded-md px-4 py-2
-         hover:bg-bfe-green hover:text-white transition;
+         hover:bg-bfe-green hover:text-white transition-all duration-200;
 }
 
 
