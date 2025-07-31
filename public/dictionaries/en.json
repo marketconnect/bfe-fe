@@ -11,8 +11,12 @@
     "currentPath": "Current Path",
     "goUp": ".. (Go Up)",
     "loading": "Loading content...",
+    "downloading": "Downloading...",
     "emptyFolder": "This folder is empty.",
-    "download": "Download"
+    "download": "Download",
+    "downloadFolder": "Download folder",
+    "downloadSelected": "Download Selected",
+    "selectAll": "Select All"
   },
   "adminPanel": {
     "title": "Admin Panel",

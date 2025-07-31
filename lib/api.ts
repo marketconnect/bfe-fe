@@ -83,6 +83,32 @@ export const getFiles = async (token: string, path: string = ''): Promise<GetFil
   return response.json();
 };
 
+export const downloadArchive = async (token: string, keys: string[], folders: string[]): Promise<void> => {
+  const response = await fetch(`${BASE_PATH}/archive`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ keys, folders }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to download archive');
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'archive.zip';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 export const getAllFolders = async (token: string): Promise<GetAllFoldersResponse> => {
     const response = await fetch(`${BASE_PATH}/admin/storage/folders`, {
     headers: {

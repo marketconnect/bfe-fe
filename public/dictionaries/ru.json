@@ -11,8 +11,12 @@
     "currentPath": "Текущий путь",
     "goUp": ".. (Вверх)",
     "loading": "Загрузка содержимого...",
+    "downloading": "Скачивание...",
     "emptyFolder": "Эта папка пуста.",
-    "download": "Скачать"
+    "download": "Скачать",
+    "downloadFolder": "Скачать папку",
+    "downloadSelected": "Скачать выбранное",
+    "selectAll": "Выбрать все"
   },
   "adminPanel": {
     "title": "Пульт верховного",
