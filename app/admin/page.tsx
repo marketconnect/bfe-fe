@@ -7,7 +7,7 @@ import * as api from '@/lib/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { User } from '@/lib/types';
 
-const AdminPanel = () => {
+const AdminPanel: React.FC = () => {
   const { token, logout } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
@@ -184,43 +184,85 @@ const AdminPanel = () => {
         <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
         <div className="space-y-6">
           {users.map(user => (
-            <div key={user.ID} className="bg-gray-100 border border-gray-300 p-4 rounded-md animate-[fadeIn_0.3s_ease-in-out]">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-xl font-semibold">{user.Username} <span className="text-sm text-gray-500">({user.Alias || `ID: ${user.ID}`})</span></h3>
-                <button onClick={() => handleDeleteUser(user.ID)} className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Delete User</button>
+            <div key={user.ID} className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-[fadeIn_0.3s_ease-in-out]">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800 font-montserrat">{user.Username}</h3>
+                  <p className="text-sm text-gray-500 mt-1">{user.Alias || `ID: ${user.ID}`}</p>
+                </div>
+                <button
+                  onClick={() => handleDeleteUser(user.ID)}
+                  className="p-2 rounded-full hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                  title="Delete User"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
 
-              <h4 className="font-bold mt-2 mb-1 text-gray-600">Permissions:</h4>
-              {user.Permissions && user.Permissions.length > 0 ? (
-                <ul className="list-disc list-inside space-y-1 mb-3">
-                  {user.Permissions.map(perm => (
-                    <li key={perm.ID} className="flex justify-between items-center">
-                      <span className="font-mono text-sm">{perm.FolderPrefix}</span>
-                      <button onClick={() => handleRevokePermission(perm.ID)} className="text-red-500 hover:text-red-700 text-xs font-semibold">Revoke</button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-500 mb-3">No permissions assigned.</p>
-              )}
+              <div className="border-t border-gray-100 pt-4">
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-bfe-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Permissions
+                </h4>
+                {user.Permissions && user.Permissions.length > 0 ? (
+                  <div className="space-y-2 mb-4">
+                    {user.Permissions.map(perm => (
+                      <div key={perm.ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="flex items-center">
+                          <span className="mr-2">📁</span>
+                          <span className="font-mono text-sm text-gray-700">{perm.FolderPrefix}</span>
+                        </div>
+                        <button
+                          onClick={() => handleRevokePermission(perm.ID)}
+                          className="p-1 rounded-full hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                          title="Revoke Permission"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 mb-4 italic">No permissions assigned.</p>
+                )}
+              </div>
 
-              <form onSubmit={(e) => handleAddPermission(e, user.ID)} className="flex items-center space-x-2">
-                <input
-                  list="folder-suggestions"
-                  type="text"
-                  value={permissionForms[user.ID] || ''}
-                  onChange={(e) => handlePermissionFormChange(user.ID, e.target.value)}
-                  placeholder="Folder Prefix (e.g., user-files/alex/)"
-                  className="flex-grow p-2 border rounded bg-gray-100 border-gray-300 text-sm"
-                  required
-                />
-                <datalist id="folder-suggestions">
-                  {allFolders.map(folder => (
-                    <option key={folder} value={folder} />
-                  ))}
-                </datalist>
-                <button type="submit" className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700">Add</button>
-              </form>
+              <div className="border-t border-gray-100 pt-4">
+                <h5 className="text-sm font-medium text-gray-600 mb-2">Add New Permission</h5>
+                <form onSubmit={(e) => handleAddPermission(e, user.ID)} className="flex items-center space-x-3">
+                  <div className="flex-grow relative">
+                    <input
+                      list="folder-suggestions"
+                      type="text"
+                      value={permissionForms[user.ID] || ''}
+                      onChange={(e) => handlePermissionFormChange(user.ID, e.target.value)}
+                      placeholder="Folder Prefix (e.g., user-files/alex/)"
+                      className="w-full p-3 border rounded-lg bg-gray-50 border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-bfe-orange focus:border-transparent"
+                      required
+                    />
+                    <datalist id="folder-suggestions">
+                      {allFolders.map(folder => (
+                        <option key={folder} value={folder} />
+                      ))}
+                    </datalist>
+                  </div>
+                  <button
+                    type="submit"
+                    className="p-3 bg-bfe-orange text-white rounded-lg hover:bg-bfe-orange-light transition-colors flex items-center justify-center"
+                    title="Add Permission"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
             </div>
           ))}
         </div>
