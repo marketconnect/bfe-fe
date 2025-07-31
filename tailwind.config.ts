@@ -6,15 +6,23 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {
+    theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        'bfe-orange-light': '#FFB257',
+        'bfe-orange':       '#EC6921',
+        'bfe-green-light':  '#84C85A',
+        'bfe-green':        '#63B338',
+      },
+      fontFamily: {
+        montserrat: ['Montserrat', 'sans-serif'],
+        inter:      ['Inter',      'sans-serif'],
       },
     },
   },
   plugins: [],
 };
+
+
+
 export default config;

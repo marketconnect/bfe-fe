@@ -130,35 +130,35 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 w-full max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6 text-center">Admin Panel</h1>
+    <div className="container mx-auto p-4 w-full max-w-4xl font-inter">
+      <h1 className="text-3xl font-bold mb-6 text-center text-bfe-orange font-montserrat">Admin Panel</h1>
       {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
       {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="bg-gray-800 p-6 rounded-lg">
+        <div className="bg-white border border-gray-200 p-6 rounded-lg">
           <h2 className="text-2xl font-bold mb-4">Update My Account</h2>
           <form onSubmit={handleAdminFormSubmit} className="space-y-4">
-            <input type="text" name="username" value={adminForm.username} onChange={handleAdminFormChange} placeholder="New Username (optional)" className="w-full p-2 border rounded bg-gray-700 border-gray-600" />
-            <input type="password" name="password" value={adminForm.password} onChange={handleAdminFormChange} placeholder="New Password (optional)" className="w-full p-2 border rounded bg-gray-700 border-gray-600" />
-            <button type="submit" className="w-full bg-purple-600 text-white p-2 rounded hover:bg-purple-700">Update Account</button>
+            <input type="text" name="username" value={adminForm.username} onChange={handleAdminFormChange} placeholder="New Username (optional)" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+            <input type="password" name="password" value={adminForm.password} onChange={handleAdminFormChange} placeholder="New Password (optional)" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+            <button type="submit" className="w-full btn-primary">Update Account</button>
           </form>
         </div>
-        <div className="bg-gray-800 p-6 rounded-lg">
+        <div className="bg-white border border-gray-200 p-6 rounded-lg">
           <h2 className="text-2xl font-bold mb-4">Create New User</h2>
           <form onSubmit={handleCreateUser} className="space-y-4">
-            <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="Username" className="w-full p-2 border rounded bg-gray-700 border-gray-600" required />
-            <input type="password" name="password" value={newUserForm.password} onChange={handleNewUserFormChange} placeholder="Password" className="w-full p-2 border rounded bg-gray-700 border-gray-600" required />
-            <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Create User</button>
+            <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="Username" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+            <input type="password" name="password" value={newUserForm.password} onChange={handleNewUserFormChange} placeholder="Password" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+            <button type="submit" className="w-full btn-primary">Create User</button>
           </form>
         </div>
       </div>
 
-      <div className="bg-gray-800 p-6 rounded-lg">
+      <div className="bg-white border border-gray-200 p-6 rounded-lg">
         <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
         <div className="space-y-6">
           {users.map(user => (
-            <div key={user.ID} className="bg-gray-700 p-4 rounded-md">
+            <div key={user.ID} className="bg-gray-100 border border-gray-300 p-4 rounded-md">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="text-xl font-semibold">{user.Username} <span className="text-sm text-gray-400">(ID: {user.ID})</span></h3>
                 <button onClick={() => handleDeleteUser(user.ID)} className="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Delete User</button>
@@ -185,7 +185,7 @@ const AdminPanel = () => {
                   value={permissionForms[user.ID] || ''}
                   onChange={(e) => handlePermissionFormChange(user.ID, e.target.value)}
                   placeholder="Folder Prefix (e.g., user-files/alex/)"
-                  className="flex-grow p-2 border rounded bg-gray-600 border-gray-500 text-sm"
+                  className="flex-grow p-2 border rounded bg-gray-100 border-gray-300 text-sm"
                   required
                 />
                 <datalist id="folder-suggestions">

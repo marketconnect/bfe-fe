@@ -8,6 +8,24 @@
   --background-end-rgb: 255, 255, 255;
 }
 
+:root {
+  --bfe-orange-light: #FFB257;
+  --bfe-orange:       #EC6921;
+  --bfe-green-light:  #84C85A;
+  --bfe-green:        #63B338;
+}
+
+body { @apply bg-white text-[#222222]; }
+.btn-primary {
+  @apply bg-gradient-to-r from-bfe-orange-light to-bfe-orange text-white
+         font-bold rounded-md px-4 py-2 shadow hover:brightness-90;
+}
+.btn-secondary {
+  @apply text-bfe-green border border-bfe-green rounded-md px-4 py-2
+         hover:bg-bfe-green hover:text-white transition;
+}
+
+
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;

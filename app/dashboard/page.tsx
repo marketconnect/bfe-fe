@@ -55,8 +55,8 @@ const DashboardPage = () => {
   return (
     <ProtectedRoute>
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-2">Your Files</h1>
-      <div className="text-gray-400 font-mono bg-gray-800 p-2 rounded mb-4 break-all">
+      <h1 className="text-3xl font-bold mb-2 text-bfe-orange font-montserrat">Your Files</h1>
+      <div className="text-bfe-green font-mono bg-gray-100 border border-bfe-green p-2 rounded mb-4 break-all">
         Current Path: {content?.path || '/'}
       </div>
 
@@ -70,7 +70,7 @@ const DashboardPage = () => {
           {/* Folders List */}
           <ul className="space-y-2">
             {content?.folders?.map((folder) => (
-              <li key={folder} className="flex items-center p-3 bg-gray-700 rounded cursor-pointer hover:bg-gray-600" onClick={() => handleFolderClick(folder)}>
+              <li key={folder} className="flex items-center p-3 bg-gray-100 rounded cursor-pointer hover:bg-bfe-orange-light" onClick={() => handleFolderClick(folder)}>
                 <span className="mr-2">📁</span>
                 <span>{getDisplayName(folder)}/</span>
               </li>
@@ -80,7 +80,7 @@ const DashboardPage = () => {
           {/* Files List */}
           <ul className="space-y-2">
             {content?.files?.map((file) => (
-              <li key={file.key} className="flex justify-between items-center p-3 bg-gray-800 rounded">
+              <li key={file.key} className="flex justify-between items-center p-3 bg-gray-100 border border-gray-300 rounded">
                 <span className="mr-2">📄 {getDisplayName(file.key)}</span>
                 <a href={file.url} download className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                   Download
