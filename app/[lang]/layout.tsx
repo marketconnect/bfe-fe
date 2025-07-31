@@ -39,8 +39,8 @@ export default function RootLayout({
   params: { lang: Locale };
 }>) {
   return (
-    <html lang={params.lang} className="h-full">
-      <body className={`${inter.variable} ${montserrat.variable} font-inter h-full`}>
+    <html lang={params.lang} className="min-h-full">
+      <body className={`${inter.variable} ${montserrat.variable} font-inter min-h-full`}>
         <AuthProvider>
           <main className="min-h-full w-full flex flex-col items-center py-8 px-4">
             {children}
