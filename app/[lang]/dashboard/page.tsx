@@ -195,6 +195,8 @@ const DashboardPage = () => {
                 <a
                   href={file.url}
                   download
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="bg-bfe-green text-white px-3 py-1 rounded hover:bg-bfe-green-light text-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
