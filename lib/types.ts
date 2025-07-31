@@ -12,6 +12,7 @@ export interface User {
   updatedAt: string;
   username: string;
   alias: string;
+  password?: string;
   isAdmin: boolean;
   permissions: Permission[];
 }
