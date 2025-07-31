@@ -209,8 +209,8 @@ const AdminPanel: React.FC = () => {
         <div className="bg-white border border-gray-200 p-6 rounded-lg animate-[fadeIn_0.3s_ease-in-out] max-w-md mx-auto">
           <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.createUserTitle}</h2>
           <form onSubmit={handleCreateUser} className="space-y-4">
-            <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder={dictionary.adminPanel.usernamePlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
-            <input type="text" name="alias" value={newUserForm.alias} onChange={handleNewUserFormChange} placeholder={dictionary.adminPanel.aliasPlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+            <input type="text" name="alias" value={newUserForm.alias} onChange={handleNewUserFormChange} placeholder="Имя" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+            <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="login" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
             <input type="password" name="password" value={newUserForm.password} onChange={handleNewUserFormChange} placeholder={dictionary.adminPanel.passwordPlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
             <button type="submit" className="w-full btn-primary">{dictionary.adminPanel.createUserButton}</button>
           </form>
