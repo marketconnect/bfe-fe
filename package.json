@@ -9,10 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@types/accept-language-parser": "^1.5.8",
+    "accept-language-parser": "^1.5.0",
     "jwt-decode": "^4.0.0",
     "next": "14.2.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "swr": "^2.3.4"
   },
   "devDependencies": {
     "@types/node": "^20",

@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-
-import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
-
 import { Inter, Montserrat } from "next/font/google";
+import { i18n, type Locale } from "@/i18n-config";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import "../globals.css";
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["600","700"], variable: '--font-montserrat' });
+
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }));
+}
 
 export const metadata: Metadata = {
   title: "File Service",
@@ -29,14 +33,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: { lang: Locale };
 }>) {
   return (
-    <html lang="en">
+    <html lang={params.lang}>
       <body className={`${inter.variable} ${montserrat.variable} font-inter`}>
         <AuthProvider>
-          <main className="min-h-screen flex flex-col items-center justify-center">
+          <main className="flex-grow w-full flex flex-col items-center justify-center py-8 px-4">
             {children}
           </main>
         </AuthProvider>

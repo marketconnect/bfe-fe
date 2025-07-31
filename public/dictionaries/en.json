@@ -1,0 +1,55 @@
+{
+  "loginPage": {
+    "title": "Login",
+    "usernameLabel": "Username",
+    "passwordLabel": "Password",
+    "signInButton": "Sign In",
+    "error": "Invalid credentials or server error."
+  },
+  "dashboard": {
+    "title": "Your Files",
+    "currentPath": "Current Path",
+    "goUp": ".. (Go Up)",
+    "loading": "Loading content...",
+    "emptyFolder": "This folder is empty.",
+    "download": "Download"
+  },
+  "adminPanel": {
+    "title": "Admin Panel",
+    "updateAccountTitle": "Update My Account",
+    "updateAccountButton": "Update Account",
+    "backButton": "Back",
+    "createUserTitle": "Create New User",
+    "usernamePlaceholder": "Username",
+    "aliasPlaceholder": "Alias (optional)",
+    "passwordPlaceholder": "Password",
+    "createUserButton": "Create User",
+    "manageUsersTitle": "Manage Users",
+    "deleteUserTitle": "Delete User",
+    "permissionsTitle": "Permissions",
+    "noPermissions": "No permissions assigned.",
+    "addPermissionTitle": "Add New Permission",
+    "folderPrefixPlaceholder": "Folder Prefix (e.g., user-files/alex/)",
+    "addPermissionButtonTitle": "Add Permission",
+    "revokePermissionButtonTitle": "Revoke Permission",
+    "confirmDeleteUser": "Are you sure you want to delete this user and all their permissions?",
+    "confirmRevokePermission": "Are you sure you want to revoke this permission?",
+    "messages": {
+      "adminUpdated": "Admin account updated. You may need to log in again.",
+      "userCreated": "User '{username}' created successfully.",
+      "userDeleted": "User deleted successfully.",
+      "permissionAdded": "Permission added successfully.",
+      "permissionRevoked": "Permission revoked successfully."
+    },
+    "errors": {
+      "fetchUsers": "Failed to fetch users",
+      "fetchFolders": "Failed to fetch folder list",
+      "updateAdmin": "Failed to update admin",
+      "createUser": "Failed to create user",
+      "deleteUser": "Failed to delete user",
+      "addPermission": "Failed to add permission",
+      "revokePermission": "Failed to revoke permission",
+      "permissionExists": "Permission already exists."
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "loginPage": {
+    "title": "Вход",
+    "usernameLabel": "Имя пользователя",
+    "passwordLabel": "Пароль",
+    "signInButton": "Войти",
+    "error": "Неверные учетные данные или ошибка сервера."
+  },
+  "dashboard": {
+    "title": "Ваши файлы",
+    "currentPath": "Текущий путь",
+    "goUp": ".. (Вверх)",
+    "loading": "Загрузка содержимого...",
+    "emptyFolder": "Эта папка пуста.",
+    "download": "Скачать"
+  },
+  "adminPanel": {
+    "title": "Пульт верховного",
+    "updateAccountTitle": "Обновить мой аккаунт",
+    "updateAccountButton": "Обновить аккаунт",
+    "backButton": "Назад",
+    "createUserTitle": "Возвести в ранг пользователя",
+    "usernamePlaceholder": "Имя пользователя",
+    "aliasPlaceholder": "Псевдоним (необязательно)",
+    "passwordPlaceholder": "Пароль",
+    "createUserButton": "Создать пользователя",
+    "manageUsersTitle": "Смотр пользователей",
+    "deleteUserTitle": "Удалить пользователя",
+    "permissionsTitle": "Разрешения",
+    "noPermissions": "Разрешения не назначены.",
+    "addPermissionTitle": "Добавить новое разрешение",
+    "folderPrefixPlaceholder": "Префикс папки (например, user-files/alex/)",
+    "addPermissionButtonTitle": "Добавить разрешение",
+    "revokePermissionButtonTitle": "Отозвать разрешение",
+    "confirmDeleteUser": "Вы уверены, что хотите удалить этого пользователя и все его разрешения?",
+    "confirmRevokePermission": "Вы уверены, что хотите отозвать это разрешение?",
+    "messages": {
+      "adminUpdated": "Аккаунт администратора обновлен. Возможно, потребуется войти заново.",
+      "userCreated": "Пользователь '{username}' успешно создан.",
+      "userDeleted": "Пользователь успешно удален.",
+      "permissionAdded": "Разрешение успешно добавлено.",
+      "permissionRevoked": "Разрешение успешно отозвано."
+    },
+    "errors": {
+      "fetchUsers": "Не удалось получить пользователей",
+      "fetchFolders": "Не удалось получить список папок",
+      "updateAdmin": "Не удалось обновить администратора",
+      "createUser": "Не удалось создать пользователя",
+      "deleteUser": "Не удалось удалить пользователя",
+      "addPermission": "Не удалось добавить разрешение",
+      "revokePermission": "Не удалось отозвать разрешение",
+      "permissionExists": "Разрешение уже существует."
+    }
+  }
+}

@@ -1,21 +1,19 @@
 export interface Permission {
-  ID: number;
-  CreatedAt: string;
-  UpdatedAt: string;
-  DeletedAt: string | null;
-  UserID: number;
-  FolderPrefix: string;
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  folderPrefix: string;
 }
 
 export interface User {
-  ID: number;
-  CreatedAt: string;
-  UpdatedAt: string;
-  DeletedAt: string | null;
-  Username: string;
-  Alias: string;
-  IsAdmin: boolean;
-  Permissions: Permission[];
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  username: string;
+  alias: string;
+  isAdmin: boolean;
+  permissions: Permission[];
 }
 
 export interface LoginResponse {

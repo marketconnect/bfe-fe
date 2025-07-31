@@ -13,8 +13,8 @@ export const login = async (username: string, password: string): Promise<LoginRe
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to login');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to login');
   }
 
   return response.json();
@@ -37,8 +37,8 @@ export const createUser = async (
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to create user');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to create user');
   }
 
   return response.json();
@@ -59,8 +59,8 @@ export const assignPermission = async (
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to assign permission');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to assign permission');
   }
 
   return response.json();
@@ -76,8 +76,8 @@ export const getFiles = async (token: string, path: string = ''): Promise<GetFil
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to fetch files');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to fetch files');
   }
 
   return response.json();
@@ -91,8 +91,8 @@ export const getAllFolders = async (token: string): Promise<GetAllFoldersRespons
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to fetch folders');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to fetch folders');
   }
 
   return response.json();
@@ -106,8 +106,8 @@ export const getUsers = async (token: string): Promise<User[]> => {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to fetch users');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to fetch users');
   }
 
   return response.json();
@@ -128,8 +128,8 @@ export const updateAdminSelf = async (token: string, username?: string, password
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to update admin account');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to update admin account');
   }
 
   return response.json();
@@ -144,8 +144,8 @@ export const deleteUser = async (token: string, userId: number): Promise<Message
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to delete user');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to delete user');
   }
 
   return response.json();
@@ -160,8 +160,8 @@ export const revokePermission = async (token: string, permissionId: number): Pro
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));
-    throw new Error(error.message || 'Failed to revoke permission');
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to revoke permission');
   }
 
   return response.json();

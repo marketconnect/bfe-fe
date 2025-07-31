@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -12,17 +12,19 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children, adminRequired = false }: ProtectedRouteProps) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const lang = params.lang || 'en';
 
   useEffect(() => {
     if (!loading) {
       if (!isAuthenticated || (adminRequired && !isAdmin)) {
-        router.push('/login');
+        router.push(`/${lang}/login`);
       }
     }
-  }, [isAuthenticated, isAdmin, loading, router, adminRequired]);
+  }, [isAuthenticated, isAdmin, loading, router, adminRequired, lang]);
 
   if (loading || !isAuthenticated || (adminRequired && !isAdmin)) {
-    return <div>Loading...</div>; // Or a proper loading spinner
+    return <div>{lang === 'ru' ? 'Загрузка...' : 'Loading...'}</div>;
   }
 
   return <>{children}</>;
