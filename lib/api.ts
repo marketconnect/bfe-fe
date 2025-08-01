@@ -90,9 +90,12 @@ export const assignPermission = async (
 };
 
 export const getFiles = async (token: string, path: string = ''): Promise<GetFilesResponse> => {
-  const url = new URL(`${BASE_PATH}/files`);
-  if (path) url.searchParams.append('path', path);
-  const response = await fetch(url.toString(), {
+  let url = `${BASE_PATH}/files`;
+  if (path) {
+    const params = new URLSearchParams({ path });
+    url += `?${params.toString()}`;
+  }
+  const response = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
