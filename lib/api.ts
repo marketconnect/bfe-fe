@@ -1,6 +1,7 @@
 import { User, LoginResponse, CreateUserResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 const BASE_PATH = `${API_URL}/api/v1`;
 
 export const login = async (username: string, password: string): Promise<LoginResponse> => {

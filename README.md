@@ -130,10 +130,17 @@ The application supports modern browsers including:
 4. Push to the branch
 5. Create a new Pull Request
 
-## License
+<!-- npm -->
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+apt install -y nodejs   # положит /usr/bin/node и /usr/bin/npm
 
-[Add your license here]
 
-## Support
+which node   # → /usr/bin/node
+which npm    # → /usr/bin/npm
+node -v      # → v20.x.x
+npm -v       # → 10.x.x (или 9.x.x)
 
-For support, please [add contact information or links to issues]
+
+cd /var/lib/bfe-fe
+npm ci --omit=dev
+npm run build
