@@ -132,7 +132,7 @@ const DashboardPage = () => {
 
         <div className="flex justify-between items-center mb-4">
           <div>
-            {content && content.path && content.path !== '/' && !content.path.startsWith(content.folders?.[0]) && (
+            {currentPath && currentPath !== '' && (
               <button onClick={handleGoUp} className="text-blue-400 hover:underline">{dictionary.dashboard.goUp}</button>
             )}
           </div>
