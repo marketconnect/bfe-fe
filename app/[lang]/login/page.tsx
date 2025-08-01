@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import useSWR from 'swr';
+import Head from 'next/head';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -18,6 +19,12 @@ export default function LoginPage() {
   const lang = params.lang || 'en';
 
   const { data: dictionary, error: dictError } = useSWR(`/dictionaries/${lang}.json`, fetcher);
+
+  useEffect(() => {
+    if (dictionary?.titles?.login) {
+      document.title = dictionary.titles.login;
+    }
+  }, [dictionary]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

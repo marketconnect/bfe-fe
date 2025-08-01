@@ -28,6 +28,12 @@ const DashboardPage = () => {
   const { data: dictionary, error: dictError } = useSWR(`/dictionaries/${lang}.json`, fetcher);
 
   useEffect(() => {
+    if (dictionary?.titles?.dashboard) {
+      document.title = dictionary.titles.dashboard;
+    }
+  }, [dictionary]);
+
+  useEffect(() => {
     const fetchFiles = async () => {
       if (!token) return;
       setLoading(true);

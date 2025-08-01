@@ -1,4 +1,9 @@
 {
+  "titles": {
+    "login": "Login - File Service",
+    "dashboard": "Dashboard - File Service",
+    "admin": "Admin Panel - File Service"
+  },
   "loginPage": {
     "title": "Login",
     "usernameLabel": "Username",

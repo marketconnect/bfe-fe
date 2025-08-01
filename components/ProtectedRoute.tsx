@@ -21,7 +21,7 @@ const ProtectedRoute = ({ children, adminRequired = false }: ProtectedRouteProps
         router.push(`/${lang}/login`);
       }
     }
-  }, [isAuthenticated, isAdmin, loading, router, adminRequired, lang]);
+  }, [isAuthenticated, isAdmin, loading, router, adminRequired]);
 
   if (loading || !isAuthenticated || (adminRequired && !isAdmin)) {
     return <div>{lang === 'ru' ? 'Загрузка...' : 'Loading...'}</div>;

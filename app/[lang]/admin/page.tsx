@@ -32,6 +32,12 @@ const AdminPanel: React.FC = () => {
   const lang = params.lang || 'en';
   const { data: dictionary, error: dictError } = useSWR(`/dictionaries/${lang}.json`, fetcher);
 
+  useEffect(() => {
+    if (dictionary?.titles?.admin) {
+      document.title = dictionary.titles.admin;
+    }
+  }, [dictionary]);
+
   const fetchUsers = async () => {
     if (!token) return;
     try {
