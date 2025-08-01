@@ -21,6 +21,11 @@ const AdminPanel: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [generatedUsername, setGeneratedUsername] = useState('');
+  const [userToReset, setUserToReset] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState('');
   const [allFolders, setAllFolders] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState<{ [key: number]: boolean }>({});
   const params = useParams();
@@ -103,12 +108,37 @@ const AdminPanel: React.FC = () => {
     e.preventDefault();
     if (!token) return;
     try {
-      await api.createUser(token, newUserForm.username, newUserForm.password, newUserForm.alias, false);
+      const response = await api.createUser(token, newUserForm.username, newUserForm.password, newUserForm.alias, false);
       showMessage(dictionary.adminPanel.messages.userCreated.replace('{username}', newUserForm.username));
+      const createdUsername = newUserForm.username;
       setNewUserForm({ username: '', password: '', alias: '' });
       fetchUsers();
+      if (response.password) {
+        setGeneratedPassword(response.password);
+        setGeneratedUsername(createdUsername);
+        setShowPasswordModal(true);
+      }
     } catch (err) {
       handleError(err, dictionary.adminPanel.errors.createUser);
+    }
+  };
+
+  const handleResetPassword = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!token || !userToReset || !newPassword) return;
+    try {
+      const response = await api.resetUserPassword(token, userToReset.id, newPassword);
+      showMessage(dictionary.adminPanel.messages.passwordReset.replace('{username}', userToReset.alias || userToReset.username));
+      const resetUsername = userToReset.username;
+      setUserToReset(null);
+      setNewPassword('');
+      if (response.password) {
+        setGeneratedPassword(response.password);
+        setGeneratedUsername(resetUsername);
+        setShowPasswordModal(true);
+      }
+    } catch (err) {
+      handleError(err, dictionary.adminPanel.errors.resetPassword);
     }
   };
 
@@ -205,6 +235,50 @@ const AdminPanel: React.FC = () => {
         </div>
       )}
 
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-in-out]">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative text-gray-800">
+            <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.passwordModalTitle}</h2>
+            <p className="mb-4 text-sm text-gray-600">{dictionary.adminPanel.passwordModalNotice}</p>
+            <div className="bg-gray-100 p-4 rounded-md font-mono text-sm mb-4 space-y-2">
+              <div><strong>login:</strong> {generatedUsername}</div>
+              <div><strong>password:</strong> {generatedPassword}</div>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(`login: ${generatedUsername}\npassword: ${generatedPassword}`)}
+                className="flex-1 btn-secondary"
+              >
+                {dictionary.adminPanel.copyButton}
+              </button>
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setGeneratedPassword('');
+                  setGeneratedUsername('');
+                }}
+                className="flex-1 btn-primary"
+              >
+                {dictionary.adminPanel.closeButton}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {userToReset && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-in-out]">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
+            <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.resetPasswordTitle.replace('{username}', userToReset.alias || userToReset.username)}</h2>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <input type="password" name="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={dictionary.adminPanel.newPasswordPlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+              <button type="submit" className="w-full btn-primary">{dictionary.adminPanel.resetPasswordButton}</button>
+            </form>
+            <button onClick={() => setUserToReset(null)} className="w-full btn-secondary mt-2">{dictionary.adminPanel.backButton}</button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <div className="bg-white border border-gray-200 p-6 rounded-lg animate-[fadeIn_0.3s_ease-in-out] max-w-md mx-auto">
           <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.createUserTitle}</h2>
@@ -222,7 +296,7 @@ const AdminPanel: React.FC = () => {
         <div className="space-y-6">
           {users.map(user => (
             <div key={user.id} className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-[fadeIn_0.3s_ease-in-out]">
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-800 font-montserrat">{user.alias || user.username}</h3>
                   <div className="flex items-center text-sm text-gray-500 mt-2">
@@ -231,24 +305,27 @@ const AdminPanel: React.FC = () => {
                     </svg>
                     <span>{user.username}</span>
                   </div>
-                  {user.password && (
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-                      </svg>
-                      <span className="font-mono">{user.password}</span>
-                    </div>
-                  )}
                 </div>
-                <button
-                  onClick={() => handleDeleteUser(user.id)}
-                  className="p-2 rounded-full hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
-                  title={dictionary.adminPanel.deleteUserTitle}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setUserToReset(user)}
+                    className="p-2 rounded-full hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-colors"
+                    title={dictionary.adminPanel.resetPasswordButton}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => handleDeleteUser(user.id)}
+                    className="p-2 rounded-full hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                    title={dictionary.adminPanel.deleteUserTitle}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div className="border-t border-gray-100 pt-4">

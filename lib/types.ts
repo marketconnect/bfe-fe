@@ -12,7 +12,6 @@ export interface User {
   updatedAt: string;
   username: string;
   alias: string;
-  password?: string;
   isAdmin: boolean;
   permissions: Permission[];
 }
@@ -24,6 +23,12 @@ export interface LoginResponse {
 export interface CreateUserResponse {
   message: string;
   user_id: number;
+  password?: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+  password?: string;
 }
 
 export interface MessageResponse {

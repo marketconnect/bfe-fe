@@ -37,12 +37,20 @@
     "addPermissionButtonTitle": "Add Permission",
     "revokePermissionButtonTitle": "Revoke Permission",
     "confirmDeleteUser": "Are you sure you want to delete this user and all their permissions?",
+    "resetPasswordButton": "Set New Password",
+    "resetPasswordTitle": "Set New Password for {username}",
+    "newPasswordPlaceholder": "New Password",
+    "passwordModalTitle": "User Password",
+    "passwordModalNotice": "The password is shown only once. Copy it now and share it with the user.",
+    "copyButton": "Copy",
+    "closeButton": "Close",
     "confirmRevokePermission": "Are you sure you want to revoke this permission?",
     "messages": {
       "adminUpdated": "Admin account updated. You may need to log in again.",
-      "userCreated": "User '{username}' created successfully.",
+      "userCreated": "User '{username}' created successfully. Password generated.",
       "userDeleted": "User deleted successfully.",
       "permissionAdded": "Permission added successfully.",
+      "passwordReset": "Password for {username} has been reset.",
       "permissionRevoked": "Permission revoked successfully."
     },
     "errors": {
@@ -52,6 +60,7 @@
       "createUser": "Failed to create user",
       "deleteUser": "Failed to delete user",
       "addPermission": "Failed to add permission",
+      "resetPassword": "Failed to reset password",
       "revokePermission": "Failed to revoke permission",
       "permissionExists": "Permission already exists."
     }

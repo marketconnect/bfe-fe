@@ -1,4 +1,4 @@
-import { User, LoginResponse, CreateUserResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse } from './types';
+import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse } from './types';
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -40,6 +40,28 @@ export const createUser = async (
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
     throw new Error(errorData.details || errorData.error || 'Failed to create user');
+  }
+
+  return response.json();
+};
+
+export const resetUserPassword = async (
+  token: string,
+  userId: number,
+  password: string
+): Promise<ResetPasswordResponse> => {
+  const response = await fetch(`${BASE_PATH}/admin/users/${userId}/password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to reset password');
   }
 
   return response.json();
