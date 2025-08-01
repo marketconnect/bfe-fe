@@ -53,10 +53,12 @@ const DashboardPage = () => {
   };
 
   const handleGoUp = () => {
-    if (!content || !content.path) return;
-    const parentPath = content.path.split('/').slice(0, -2).join('/') + '/';
-    if (content.path !== parentPath) {
-       router.push(`/${lang}/dashboard?path=${parentPath}`);
+    if (!currentPath) return;
+    const pathParts = currentPath.split('/').filter(Boolean);
+    if (pathParts.length > 0) {
+      pathParts.pop(); // Убираем последнюю часть пути
+      const parentPath = pathParts.length > 0 ? pathParts.join('/') + '/' : '';
+      router.push(`/${lang}/dashboard?path=${parentPath}`);
     }
   };
 
