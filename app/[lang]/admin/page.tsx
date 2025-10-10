@@ -47,6 +47,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
   const [isMoving, setIsMoving] = useState(false);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // State for drag and drop
   const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
@@ -385,6 +386,48 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     }
   };
 
+  const handleDownload = async () => {
+    if (!token) return;
+    const filesToDownload = Array.from(selectedFiles);
+    const foldersToDownload = Array.from(selectedFolders);
+
+    setIsDownloading(true);
+    setError('');
+
+    // Handle single file download differently
+    if (filesToDownload.length === 1 && foldersToDownload.length === 0) {
+      try {
+        const fileKey = filesToDownload[0];
+        const freshUrl = await api.getFreshFileUrl(token, fileKey);
+        const finalUrl = toProxy(freshUrl);
+        window.open(finalUrl, '_blank', 'noopener');
+        handleClearSelection();
+      } catch (err: any) {
+        setError(err.message || 'Failed to open file');
+        setTimeout(() => setError(''), 5000);
+      } finally {
+        setIsDownloading(false);
+      }
+      return;
+    }
+
+    // Handle archive download for multiple items
+    if (filesToDownload.length === 0 && foldersToDownload.length === 0) {
+      setIsDownloading(false); // Nothing to do
+      return;
+    }
+
+    try {
+      await api.downloadArchive(token, filesToDownload, foldersToDownload);
+      handleClearSelection();
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleDragStart = (e: React.DragEvent, itemKey: string, isFolder: boolean) => {
     const currentSelectionFiles = new Set(selectedFiles);
     const currentSelectionFolders = new Set(selectedFolders);
@@ -575,9 +618,13 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
               <span>Копировать в</span>
             </button>
-            <button disabled className="flex items-center space-x-1 text-gray-400 p-2 rounded-md cursor-not-allowed hover:bg-transparent">
+            <button
+              onClick={handleDownload}
+              disabled={isDownloading}
+              className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              <span>Скачать</span>
+              <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
             </button>
           </div>
         ) : (
@@ -1353,3 +1400,15 @@ const Page = () => (
 );
 
 export default Page;
+
+const toProxy = (url: string) => {
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'storage.yandexcloud.net') {
+      return `/s3proxy${u.pathname}${u.search}`;
+    }
+    return url;
+  } catch {
+    return url;
+  }
+};
