@@ -1,0 +1,37 @@
+--- app/[lang]/admin/page.tsx
++++ app/[lang]/admin/page.tsx
+@@ -15,7 +15,7 @@
+ };
+ 
+ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
+-  const { token } = useAuth();
++  const { token, isAdmin, userId } = useAuth();
+   const router = useRouter();
+   const params = useParams();
+   const lang = params.lang as string;
+@@ -327,7 +327,24 @@
+ 
+     try {
+       const sources = Array.from(selectedFiles).concat(Array.from(selectedFolders));
+-      const destination = movePath === '' ? '/' : movePath;
++      let destination = movePath;
++      if (movePath === '') { // If moving to "My Files" (the root)
++        if (isAdmin && userId && userId !== 1) { // Regular admin
++          const firstSource = sources[0];
++          if (firstSource) {
++            const sourceRoot = firstSource.split('/')[0];
++            destination = `${sourceRoot}/`;
++          } else {
++            setError("Cannot determine root folder from selection.");
++            setTimeout(() => setError(''), 5000);
++            setIsMoving(false);
++            setShowMoveModal(false);
++            return;
++          }
++        } else { // Superadmin
++          destination = '/';
++        }
++      }
+       await api.moveItems(token, sources, destination);
+       setMessage(dictionary.adminPanel.messages.itemsMovedSuccess);
+       setTimeout(() => setMessage(''), 3000);
