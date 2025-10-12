@@ -64,6 +64,8 @@
       "create": "Создание",
       "folder": "Папка",
       "uploadFile": "Загрузить файл",
+      "refresh": "Обновить",
+      "refreshing": "Обновление...",
       "uploads": "Загрузки",
       "done": "Готово",
       "uploadFailed": "Ошибка загрузки",

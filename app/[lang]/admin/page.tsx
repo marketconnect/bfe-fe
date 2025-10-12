@@ -600,7 +600,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-2 border-b min-h-[69px]">
+      <div className="flex justify-between items-center p-2 min-h-[69px]">
         <div className="flex-1">
           {hasSelection ? (
             <div className="flex flex-wrap items-center gap-4">
@@ -646,7 +646,20 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
             </div>
           )}
         </div>
-        <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchContent}
+            disabled={loading}
+            title={loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}
+            className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A7.5 7.5 0 0119.5 15M19.418 15A7.5 7.5 0 014.5 9" />
+            </svg>
+            <span>{loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
+          </button>
+          <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
+        </div>
       </div>
 
       {/* Local Messages */}
@@ -1201,10 +1214,17 @@ const AdminPanel: React.FC = () => {
         <div className={`flex items-center p-4 border-b ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && <img src="/android-chrome-192x192.png" alt="Admin Logo" className="h-10 w-auto" />}
           <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block p-2 rounded-full hover:bg-gray-200">
-            {isSidebarCollapsed ?
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg> :
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-            }
+            {isSidebarCollapsed ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 5l7 7-7 7" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M18 19l-7-7 7-7" />
+              </svg>
+            )}
           </button>
         </div>
         <nav className="flex-grow p-4 space-y-2">

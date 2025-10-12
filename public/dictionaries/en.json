@@ -64,6 +64,8 @@
       "create": "Create",
       "folder": "Folder",
       "uploadFile": "Upload File",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
       "uploads": "Uploads",
       "done": "Done",
       "uploadFailed": "Upload failed",
