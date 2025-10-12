@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, FormEvent, ChangeEvent, useRef, useCallback } from 'react';
+import React, { useState, useEffect, FormEvent, ChangeEvent, useRef, useCallback, useMemo } from 'react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
@@ -647,17 +647,19 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={fetchContent}
-            disabled={loading}
-            title={loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}
-            className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A7.5 7.5 0 0119.5 15M19.418 15A7.5 7.5 0 014.5 9" />
-            </svg>
-            <span>{loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
-          </button>
+          {!hasSelection && (
+            <button
+              onClick={fetchContent}
+              disabled={loading}
+              title={loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}
+              className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A7.5 7.5 0 0119.5 15M19.418 15A7.5 7.5 0 014.5 9" />
+              </svg>
+              <span>{loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
+            </button>
+          )}
           <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
         </div>
       </div>
@@ -942,6 +944,36 @@ const AdminPanel: React.FC = () => {
   const router = useRouter();
   const [view, setView] = useState<'users' | 'files' | 'settings'>('files');
   const [users, setUsers] = useState<User[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersViewMode, setUsersViewMode] = useState<'cards' | 'table'>('cards');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState<'all' | 'admins' | 'nonAdmins'>('all');
+  const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
+  const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+
+  const filteredUsers = useMemo(() => {
+    let data = Array.isArray(users) ? [...users] : [];
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      data = data.filter(u =>
+        (u.alias || '').toLowerCase().includes(q) ||
+        (u.username || '').toLowerCase().includes(q)
+      );
+    }
+    if (filterRole !== 'all') {
+      data = data.filter(u => (filterRole === 'admins' ? u.isAdmin : !u.isAdmin));
+    }
+    if (filterNotify !== 'all') {
+      data = data.filter(u => (filterNotify === 'on' ? !!u.notifyByEmail : !u.notifyByEmail));
+    }
+    data.sort((a, b) => {
+      const an = (a.alias || a.username || '').toLowerCase();
+      const bn = (b.alias || b.username || '').toLowerCase();
+      return sortName === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an);
+    });
+    return data;
+  }, [users, searchQuery, filterRole, filterNotify, sortName]);
   const [adminForm, setAdminForm] = useState({ username: '', password: '', is_admin: false });
     const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
   const [formErrors, setFormErrors] = useState<{ newUser: { username?: string; email?: string; }, settings: { username?: string; } }>({ newUser: {}, settings: {} });
@@ -969,12 +1001,14 @@ const AdminPanel: React.FC = () => {
 
   const fetchUsers = async () => {
     if (!token) return;
+    setUsersLoading(true);
     try {
       const userData = await api.getUsers(token);
-      // setUsers(userData);
       setUsers(Array.isArray(userData) ? userData : []);
     } catch (err: any) {
       setError(dictionary?.adminPanel?.errors?.fetchUsers || err.message);
+    } finally {
+      setUsersLoading(false);
     }
   };
 
@@ -1191,7 +1225,7 @@ const AdminPanel: React.FC = () => {
   if (dictError) return <div>Failed to load translations.</div>;
 
   return (
-    <div className="w-full h-screen font-inter flex flex-col md:flex-row bg-gray-50">
+    <div className="w-full h-screen font-inter flex flex-col md:flex-row bg-gray-50 overflow-x-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex justify-between items-center p-4 border-b bg-white">
         <img src="/android-chrome-192x192.png" alt="Admin Logo" className="h-8 w-auto" />
@@ -1272,8 +1306,74 @@ const AdminPanel: React.FC = () => {
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
           <div className="w-full max-w-4xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6 text-center text-bfe-orange font-montserrat">{dictionary.adminPanel.title}</h1>
-            <div className="mb-8">
+            <div className="flex justify-end mb-6">
+              <button
+                type="button"
+                onClick={() => setShowCreateDrawer(true)}
+                className="btn-primary"
+              >
+                {dictionary.adminPanel.users.toolbar.createUser}
+              </button>
+            </div>
+            <div className="mb-6">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={dictionary.adminPanel.users.toolbar.searchPlaceholder}
+                    className="w-full sm:w-64 p-2 border rounded-md bg-white"
+                    aria-label={dictionary.adminPanel.users.toolbar.searchPlaceholder}
+                  />
+                  <div className="inline-flex rounded-md border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setUsersViewMode('cards')}
+                      className={`px-3 py-2 text-sm ${usersViewMode === 'cards' ? 'bg-bfe-orange text-white' : 'bg-white text-gray-700'}`}
+                    >
+                      {dictionary.adminPanel.users.toolbar.view.cards}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUsersViewMode('table')}
+                      className={`px-3 py-2 text-sm border-l ${usersViewMode === 'table' ? 'bg-bfe-orange text-white' : 'bg-white text-gray-700'}`}
+                    >
+                      {dictionary.adminPanel.users.toolbar.view.table}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                  <select
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value as any)}
+                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
+                  >
+                    <option value="all">{dictionary.adminPanel.users.toolbar.filter.role.all}</option>
+                    <option value="admins">{dictionary.adminPanel.users.toolbar.filter.role.admins}</option>
+                    <option value="nonAdmins">{dictionary.adminPanel.users.toolbar.filter.role.nonAdmins}</option>
+                  </select>
+                  <select
+                    value={filterNotify}
+                    onChange={(e) => setFilterNotify(e.target.value as any)}
+                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
+                  >
+                    <option value="all">{dictionary.adminPanel.users.toolbar.filter.notify.all}</option>
+                    <option value="on">{dictionary.adminPanel.users.toolbar.filter.notify.on}</option>
+                    <option value="off">{dictionary.adminPanel.users.toolbar.filter.notify.off}</option>
+                  </select>
+                  <select
+                    value={sortName}
+                    onChange={(e) => setSortName(e.target.value as any)}
+                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
+                  >
+                    <option value="asc">{dictionary.adminPanel.users.toolbar.sort.nameAsc}</option>
+                    <option value="desc">{dictionary.adminPanel.users.toolbar.sort.nameDesc}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="hidden">
               <div className="bg-white border border-gray-200 p-6 rounded-lg animate-[fadeIn_0.3s_ease-in-out] max-w-md mx-auto">
                 <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.createUserTitle}</h2>
                 <form onSubmit={handleCreateUser} className="space-y-4">
@@ -1306,8 +1406,64 @@ const AdminPanel: React.FC = () => {
 
             <div className="bg-white border border-gray-200 p-6 rounded-lg animate-[fadeIn_0.3s_ease-in-out] mt-8">
               <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.manageUsersTitle}</h2>
-              <div className="space-y-6">
-                {(users ?? []).map(user => (
+              {usersLoading && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="p-6 border rounded-lg animate-pulse bg-gray-50 h-32" />
+                  ))}
+                </div>
+              )}
+              {!usersLoading && filteredUsers.length === 0 && (
+                <div className="text-center p-6 bg-gray-50 border rounded-lg mb-4">
+                  <h3 className="text-lg font-semibold mb-2">{dictionary.adminPanel.users.empty.title}</h3>
+                  <p className="text-gray-600 mb-4">{dictionary.adminPanel.users.empty.text}</p>
+                  <button onClick={() => setShowCreateDrawer(true)} className="btn-primary">{dictionary.adminPanel.users.empty.cta}</button>
+                </div>
+              )}
+              <div className={`${usersViewMode !== 'table' || usersLoading || filteredUsers.length === 0 ? 'hidden' : ''} overflow-x-auto rounded-lg border mb-6`}>
+                <div className="min-w-full divide-y">
+                  {filteredUsers.map(user => (
+                    <div key={user.id} className="grid grid-cols-2 md:grid-cols-5 items-center p-3">
+                      <div className="font-medium">{user.alias || user.username}</div>
+                      <div className="text-gray-500">{user.username}</div>
+                      <div className="text-gray-500 hidden md:block">{(user as any).email || '-'}</div>
+                      <div>{user.isAdmin ? <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700">{dictionary.adminPanel.users.badges.admin}</span> : null}</div>
+                      <div className="flex items-center justify-end gap-2">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={user.notifyByEmail}
+                            disabled={user.id === userId || user.isAdmin}
+                            onChange={(e) => handleToggleNotify(user.id, e.target.checked)}
+                          />
+                          <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bfe-green peer-disabled:cursor-not-allowed peer-disabled:opacity-50"></div>
+                        </label>
+                        <button
+                          onClick={() => setUserToReset(user)}
+                          className="p-2 rounded-full hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-colors"
+                          title={dictionary.adminPanel.resetPasswordButton}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="p-2 rounded-full hover:bg-red-50 text-red-500 hover:text-red-700 transition-colors"
+                          title={dictionary.adminPanel.deleteUserTitle}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className={`${usersViewMode !== 'cards' || usersLoading || filteredUsers.length === 0 ? 'hidden' : ''} space-y-6`}>
+                {filteredUsers.map(user => (
                   <div key={user.id} className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-[fadeIn_0.3s_ease-in-out]">
                     <div className="flex justify-between items-center mb-4">
                       <div>
@@ -1477,6 +1633,49 @@ const AdminPanel: React.FC = () => {
 
 
 
+      {showCreateDrawer && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setShowCreateDrawer(false)} />
+          <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold">{dictionary.adminPanel.createUserTitle}</h2>
+              <button onClick={() => setShowCreateDrawer(false)} className="p-2 rounded hover:bg-gray-100" title={dictionary.adminPanel.users.createUser.closeDrawer}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <input type="text" name="alias" value={newUserForm.alias} onChange={handleNewUserFormChange} placeholder="Имя" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+              <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="login" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+              {formErrors.newUser.username && <p className="text-red-500 text-xs mt-1">{formErrors.newUser.username}</p>}
+              <input type="email" name="email" value={newUserForm.email} onChange={handleNewUserFormChange} placeholder="Email (необязательно)" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+              {formErrors.newUser.email && <p className="text-red-500 text-xs mt-1">{formErrors.newUser.email}</p>}
+              <input type="password" name="password" value={newUserForm.password} onChange={handleNewUserFormChange} placeholder={dictionary.adminPanel.passwordPlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+              {isAdmin && userId === '1' && (
+                <div className="flex items-center">
+                  <input type="checkbox" name="is_admin" checked={newUserForm.is_admin} onChange={handleNewUserFormChange} className="mr-2" />
+                  <label htmlFor="is_admin">Администратор</label>
+                </div>
+              )}
+              <div className="flex items-center">
+                <input type="checkbox" name="sendAuthByEmail" checked={newUserForm.sendAuthByEmail} onChange={handleNewUserFormChange} className="mr-2" disabled={!newUserForm.email} />
+                <label htmlFor="sendAuthByEmail" className={!newUserForm.email ? 'text-gray-400' : ''}>Отправить данные для входа по email</label>
+              </div>
+              {!(userId === '1' && newUserForm.is_admin) && (
+                <div className="flex items-center">
+                  <input type="checkbox" name="notifyByEmail" checked={newUserForm.notifyByEmail} onChange={handleNewUserFormChange} className="mr-2" disabled={!newUserForm.email} />
+                  <label htmlFor="notifyByEmail" className={!newUserForm.email ? 'text-gray-400' : ''}>{dictionary.adminPanel.notifyByEmailLabel}</label>
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowCreateDrawer(false)} className="btn-secondary">{dictionary.adminPanel.users.createUser.closeDrawer}</button>
+                <button type="submit" className="btn-primary">{dictionary.adminPanel.createUserButton}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-in-out]">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative text-gray-800">

@@ -59,6 +59,26 @@
       "settings": "Settings"
     },
     "language": "Language",
+    "users": {
+      "toolbar": {
+        "searchPlaceholder": "Search by name or username",
+        "view": { "cards": "Cards", "table": "Table" },
+        "filter": {
+          "role": { "all": "All", "admins": "Admins", "nonAdmins": "Non-admins" },
+          "notify": { "all": "Notifications: All", "on": "Notifications: On", "off": "Notifications: Off" }
+        },
+        "sort": { "nameAsc": "Name A→Z", "nameDesc": "Name Z→A" },
+        "createUser": "Create User"
+      },
+      "empty": {
+        "title": "No users found",
+        "text": "Adjust filters or create a new user.",
+        "cta": "Create User"
+      },
+      "skeleton": { "loading": "Loading..." },
+      "badges": { "admin": "Admin" },
+      "createUser": { "openDrawer": "Create User", "closeDrawer": "Close" }
+    },
     "fileManager": {
     "myFiles": "My Files",
       "create": "Create",
