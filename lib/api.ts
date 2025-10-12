@@ -26,7 +26,10 @@ export const createUser = async (
   username: string,
   password: string,
   alias: string,
-  isAdmin: boolean
+  email: string,
+  isAdmin: boolean,
+  sendAuthByEmail: boolean,
+  notifyByEmail: boolean
 ): Promise<CreateUserResponse> => {
   const response = await fetch(`${BASE_PATH}/admin/users`, {
     method: 'POST',
@@ -34,12 +37,34 @@ export const createUser = async (
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ username, password, alias, is_admin: isAdmin }),
+    body: JSON.stringify({ username, password, alias, email, is_admin: isAdmin, sendAuthByEmail, notifyByEmail }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
     throw new Error(errorData.details || errorData.error || 'Failed to create user');
+  }
+
+  return response.json();
+};
+
+export const updateUserNotifySetting = async (
+  token: string,
+  userId: string,
+  notifyByEmail: boolean
+): Promise<MessageResponse> => {
+  const response = await fetch(`${BASE_PATH}/admin/users/${userId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ notifyByEmail }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to update notification setting');
   }
 
   return response.json();
@@ -229,7 +254,9 @@ export const getUsers = async (token: string): Promise<User[]> => {
       updatedAt: u.updatedAt ?? u.updated_at ?? '',
       username: u.username ?? '',
       alias: u.alias ?? '', // сервер может отдать null
+      email: u.email ?? '',
       isAdmin: Boolean(u.isAdmin ?? u.is_admin),
+      notifyByEmail: Boolean(u.notifyByEmail ?? u.notify_by_email),
       permissions: Array.isArray(u.permissions)
         ? u.permissions.map((p: any) => ({
             id: String(p.id),

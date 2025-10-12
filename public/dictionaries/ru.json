@@ -29,12 +29,14 @@
     "updateAccountButton": "Обновить аккаунт",
     "backButton": "Назад",
     "createUserTitle": "Создать нового пользователя",
+    "notifyByEmailLabel": "Уведомлять об изменениях по email",
     "usernamePlaceholder": "Имя пользователя",
     "aliasPlaceholder": "Псевдоним (необязательно)",
     "passwordPlaceholder": "Пароль",
     "createUserButton": "Создать пользователя",
     "manageUsersTitle": "Управление пользователями",
     "deleteUserTitle": "Удалить пользователя",
+    "notificationsLabel": "Уведомления по email",
     "permissionsTitle": "Разрешения",
     "noPermissions": "Разрешения не назначены.",
     "addPermissionTitle": "Добавить новое разрешение",
@@ -52,8 +54,11 @@
     "confirmRevokePermission": "Вы уверены, что хотите отозвать это разрешение?",
     "asideMenu": {
       "users": "Пользователи",
-      "files": "Файлы"
+      "files": "Файлы",
+      "logout": "Выйти",
+      "settings": "Настройки"
     },
+    "language": "Язык",
     "fileManager": {
       "myFiles": "Мои файлы",
       "create": "Создание",
@@ -85,6 +90,7 @@
       "userCreated": "Пользователь '{username}' успешно создан. Пароль сгенерирован.",
       "userDeleted": "Пользователь успешно удален.",
       "permissionAdded": "Разрешение успешно добавлено.",
+      "notificationSettingUpdated": "Настройка уведомлений для пользователя {username} обновлена.",
       "passwordReset": "Пароль для пользователя {username} был сброшен.",
       "permissionRevoked": "Разрешение успешно отозвано.",
       "filesDeletedSuccess": "Файлы успешно удалены.",
@@ -99,6 +105,7 @@
       "deleteUser": "Не удалось удалить пользователя",
       "addPermission": "Не удалось добавить разрешение",
       "resetPassword": "Не удалось сбросить пароль",
+      "notificationSettingUpdateFailed": "Не удалось обновить настройку уведомлений.",
       "revokePermission": "Не удалось отозвать разрешение",
       "permissionExists": "Разрешение уже существует.",
       "deleteFilesError": "Не удалось удалить файлы.",

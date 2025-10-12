@@ -29,12 +29,14 @@
     "updateAccountButton": "Update Account",
     "backButton": "Back",
     "createUserTitle": "Create New User",
+    "notifyByEmailLabel": "Notify about changes by email",
     "usernamePlaceholder": "Username",
     "aliasPlaceholder": "Alias (optional)",
     "passwordPlaceholder": "Password",
     "createUserButton": "Create User",
     "manageUsersTitle": "Users",
     "deleteUserTitle": "Delete User",
+    "notificationsLabel": "Email Notifications",
     "permissionsTitle": "Permissions",
     "noPermissions": "No permissions assigned.",
     "addPermissionTitle": "Add New Permission",
@@ -52,8 +54,11 @@
     "confirmRevokePermission": "Are you sure you want to revoke this permission?",
      "asideMenu": {
       "users": "Users",
-      "files": "Files"
+      "files": "Files",
+      "logout": "Logout",
+      "settings": "Settings"
     },
+    "language": "Language",
     "fileManager": {
     "myFiles": "My Files",
       "create": "Create",
@@ -86,6 +91,7 @@
       "userDeleted": "User deleted successfully.",
       "permissionAdded": "Permission added successfully.",
       "passwordReset": "Password for {username} has been reset.",
+      "notificationSettingUpdated": "Notification setting for user {username} updated.",
       "permissionRevoked": "Permission revoked successfully.",
       "filesDeletedSuccess": "Files deleted successfully.",
       "itemsMovedSuccess": "Items moved successfully.",
@@ -99,6 +105,7 @@
       "deleteUser": "Failed to delete user",
       "addPermission": "Failed to add permission",
       "resetPassword": "Failed to reset password",
+      "notificationSettingUpdateFailed": "Failed to update notification setting.",
       "revokePermission": "Failed to revoke permission",
       "permissionExists": "Permission already exists.",
       "deleteFilesError": "Failed to delete files.",

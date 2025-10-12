@@ -12,7 +12,9 @@ export interface User {
   updatedAt: string;
   username: string;
   alias: string;
+  email?: string;
   isAdmin: boolean;
+  notifyByEmail: boolean;
   permissions: Permission[];
 }
 export interface LoginResponse {

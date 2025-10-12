@@ -214,7 +214,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
 
     try {
       setUploads(prev => prev.map(u => u.id === upload.id ? { ...u, status: 'uploading' } : u));
-      const { uploadUrl } = await api.generateUploadUrl(token, upload.file.name, upload.file.type, path);
+      const contentType = upload.file.type || 'application/octet-stream';
+      const { uploadUrl } = await api.generateUploadUrl(token, upload.file.name, contentType, path);
       const proxiedUrl = uploadUrl.replace(
         'https://storage.yandexcloud.net',
         `${window.location.origin}/s3proxy`
@@ -446,7 +447,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       };
     }
     draggedItemsRef.current = sourcesToDrag;
-    e.dataTransfer.setData('application/json', JSON.stringify(sourcesToDrag));
+    e.dataTransfer.setData('text/plain', JSON.stringify(sourcesToDrag));
     e.dataTransfer.effectAllowed = 'move';
   };
 
@@ -464,7 +465,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     setDragOverFolder(null);
     setDragOverBreadcrumb(null);
 
-    const sourcesData = e.dataTransfer.getData('application/json');
+    const sourcesData = e.dataTransfer.getData('text/plain');
     if (!sourcesData) return;
 
     const { files, folders } = JSON.parse(sourcesData);
@@ -600,50 +601,52 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     >
       {/* Header */}
       <div className="flex justify-between items-center p-2 border-b min-h-[69px]">
-        {hasSelection ? (
-          <div className="flex flex-wrap items-center gap-4 w-full">
-            <button onClick={handleClearSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-              <span>{`${selectedFiles.size + selectedFolders.size} выбраны`}</span>
-            </button>
-            <button onClick={() => setShowDeleteModal(true)} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              <span>Удалить</span>
-            </button>
-            <button onClick={() => { setShowMoveModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 9l4 4m0 0l-4 4m4-4H3" /></svg>
-              <span>{dictionary.adminPanel.fileManager.move}</span>
-            </button>
-            <button onClick={() => { setShowCopyModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-              <span>Копировать в</span>
-            </button>
-            <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-              <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-4">
-            <div className="relative" ref={createDropdownRef}>
-              <button onClick={() => setShowCreateDropdown(!showCreateDropdown)} className="btn-primary flex items-center space-x-2">
-                <span>{dictionary.adminPanel.fileManager.create}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+        <div className="flex-1">
+          {hasSelection ? (
+            <div className="flex flex-wrap items-center gap-4">
+              <button onClick={handleClearSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <span>{`${selectedFiles.size + selectedFolders.size} выбраны`}</span>
               </button>
-              {showCreateDropdown && (
-                <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                  <button onClick={() => { setShowCreateFolderModal(true); setShowCreateDropdown(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.folder}</button>
-                  <button onClick={() => fileInputRef.current?.click()} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.uploadFile}</button>
-                </div>
-              )}
+              <button onClick={() => setShowDeleteModal(true)} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                <span>Удалить</span>
+              </button>
+              <button onClick={() => { setShowMoveModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 9l4 4m0 0l-4 4m4-4H3" /></svg>
+                <span>{dictionary.adminPanel.fileManager.move}</span>
+              </button>
+              <button onClick={() => { setShowCopyModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                <span>Копировать в</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
+              </button>
             </div>
-          </div>
-        )}
-            <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
+          ) : (
+            <div className="flex items-center space-x-4">
+              <div className="relative" ref={createDropdownRef}>
+                <button onClick={() => setShowCreateDropdown(!showCreateDropdown)} className="btn-primary flex items-center space-x-2">
+                  <span>{dictionary.adminPanel.fileManager.create}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {showCreateDropdown && (
+                  <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                    <button onClick={() => { setShowCreateFolderModal(true); setShowCreateDropdown(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.folder}</button>
+                    <button onClick={() => fileInputRef.current?.click()} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.uploadFile}</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
       </div>
 
       {/* Local Messages */}
@@ -922,16 +925,16 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
 };
 
 const AdminPanel: React.FC = () => {
-  const { token, logout } = useAuth();
+  const { token, logout, isAdmin, userId } = useAuth();
   const router = useRouter();
-  const [view, setView] = useState<'users' | 'files'>('files');
+  const [view, setView] = useState<'users' | 'files' | 'settings'>('files');
   const [users, setUsers] = useState<User[]>([]);
   const [adminForm, setAdminForm] = useState({ username: '', password: '', is_admin: false });
-    const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', is_admin: false });
+    const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
+  const [formErrors, setFormErrors] = useState<{ newUser: { username?: string; email?: string; }, settings: { username?: string; } }>({ newUser: {}, settings: {} });
   const [permissionForms, setPermissionForms] = useState<{ [key: string]: string }>({});
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [generatedUsername, setGeneratedUsername] = useState('');
@@ -1009,10 +1012,19 @@ const AdminPanel: React.FC = () => {
   const handleAdminFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
+
+    const errors: { username?: string; } = {};
+    if (adminForm.username && !/^[a-zA-Z0-9_-]+$/.test(adminForm.username)) {
+      errors.username = 'Логин может содержать только латинские буквы, цифры, _ и -.';
+    }
+    setFormErrors(prev => ({ ...prev, settings: errors }));
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     try {
       await api.updateAdminSelf(token, adminForm.username, adminForm.password);
       showMessage(dictionary.adminPanel.messages.adminUpdated);
-      setIsSettingsOpen(false);
       setAdminForm({ username: '', password: '', is_admin: false });
       setTimeout(() => logout(), 2000);
     } catch (err) {
@@ -1029,11 +1041,24 @@ const AdminPanel: React.FC = () => {
   const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
+
+    const errors: { username?: string; email?: string; } = {};
+    if (!/^[a-zA-Z0-9_-]+$/.test(newUserForm.username)) {
+      errors.username = 'Логин может содержать только латинские буквы, цифры, _ и -.';
+    }
+    if (newUserForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUserForm.email)) {
+      errors.email = 'Пожалуйста, введите корректный email.';
+    }
+    setFormErrors(prev => ({ ...prev, newUser: errors }));
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     try {
-      const response = await api.createUser(token, newUserForm.username, newUserForm.password, newUserForm.alias, newUserForm.is_admin);
+      const response = await api.createUser(token, newUserForm.username, newUserForm.password, newUserForm.alias, newUserForm.email, newUserForm.is_admin, newUserForm.sendAuthByEmail, newUserForm.notifyByEmail);
       showMessage(dictionary.adminPanel.messages.userCreated.replace('{username}', newUserForm.username));
       const createdUsername = newUserForm.username;
-      setNewUserForm({ username: '', password: '', alias: '', is_admin: false });
+      setNewUserForm({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
       fetchUsers();
       if (response.password) {
         setGeneratedPassword(response.password);
@@ -1061,6 +1086,26 @@ const AdminPanel: React.FC = () => {
       }
     } catch (err) {
       handleError(err, dictionary.adminPanel.errors.resetPassword);
+    }
+  };
+
+  const handleToggleNotify = async (userIdToUpdate: string, newNotifyValue: boolean) => {
+    if (!token) return;
+
+    const originalUsers = [...users];
+    // Optimistic UI update
+    setUsers(users.map(u => u.id === userIdToUpdate ? { ...u, notifyByEmail: newNotifyValue } : u));
+
+    try {
+      const userToUpdate = users.find(u => u.id === userIdToUpdate);
+      if (userToUpdate) {
+        await api.updateUserNotifySetting(token, userIdToUpdate, newNotifyValue);
+        showMessage(dictionary.adminPanel.messages.notificationSettingUpdated.replace('{username}', userToUpdate.alias || userToUpdate.username));
+      }
+    } catch (err) {
+      // Revert on error
+      setUsers(originalUsers);
+      handleError(err, dictionary.adminPanel.errors.notificationSettingUpdateFailed);
     }
   };
 
@@ -1144,8 +1189,15 @@ const AdminPanel: React.FC = () => {
           </button>
         </div>
 
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 bg-white border-r z-30 flex flex-col transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+      <aside className={`fixed inset-y-0 left-0 bg-white border-r z-30 flex flex-col transition-transform duration-300 md:relative md:translate-x-0 text-sm font-['Segoe_UI_Web_(Cyrillic)',-apple-system,BlinkMacSystemFont,Roboto,'Helvetica_Neue',sans-serif] ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
         <div className={`flex items-center p-4 border-b ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isSidebarCollapsed && <img src="/android-chrome-192x192.png" alt="Admin Logo" className="h-10 w-auto" />}
           <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block p-2 rounded-full hover:bg-gray-200">
@@ -1156,29 +1208,47 @@ const AdminPanel: React.FC = () => {
           </button>
         </div>
         <nav className="flex-grow p-4 space-y-2">
-          <button onClick={() => { setView('users'); setIsSidebarOpen(false); }} className={`w-full flex items-center p-2 rounded transition-colors ${view === 'users' ? 'bg-bfe-orange text-white' : 'hover:bg-gray-100'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.282-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.282.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            {!isSidebarCollapsed && <span className="ml-3">{dictionary.adminPanel.asideMenu.users}</span>}
+          <button onClick={() => { setView('users'); setIsSidebarOpen(false); }} className={`w-full flex items-center p-2 rounded transition-colors hover:bg-gray-100 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className={`p-1 rounded transition-colors ${view === 'users' ? 'bg-bfe-orange text-white' : 'text-gray-600'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.282-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.282.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            </div>
+            {!isSidebarCollapsed && <span className={`ml-3 ${view === 'users' ? 'font-bold' : ''}`}>{dictionary.adminPanel.asideMenu.users}</span>}
           </button>
-          <button onClick={() => { setView('files'); setIsSidebarOpen(false); }} className={`w-full flex items-center p-2 rounded transition-colors ${view === 'files' ? 'bg-bfe-orange text-white' : 'hover:bg-gray-100'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
-            {!isSidebarCollapsed && <span className="ml-3">{dictionary.adminPanel.asideMenu.files}</span>}
+          <button onClick={() => { setView('files'); setIsSidebarOpen(false); }} className={`w-full flex items-center p-2 rounded transition-colors hover:bg-gray-100 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className={`p-1 rounded transition-colors ${view === 'files' ? 'bg-bfe-orange text-white' : 'text-gray-600'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            </div>
+            {!isSidebarCollapsed && <span className={`ml-3 ${view === 'files' ? 'font-bold' : ''}`}>{dictionary.adminPanel.asideMenu.files}</span>}
+          </button>
+          <button onClick={() => { setView('settings'); setIsSidebarOpen(false); }} className={`w-full flex items-center p-2 rounded transition-colors hover:bg-gray-100 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+            <div className={`p-1 rounded transition-colors ${view === 'settings' ? 'bg-bfe-orange text-white' : 'text-gray-600'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            {!isSidebarCollapsed && <span className={`ml-3 ${view === 'settings' ? 'font-bold' : ''}`}>{dictionary.adminPanel.asideMenu.settings}</span>}
           </button>
         </nav>
-        <div className={`p-4 border-t space-y-4 ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
-          <button onClick={() => setIsSettingsOpen(true)} title={dictionary.adminPanel.updateAccountTitle} className={`w-full flex items-center p-2 rounded hover:bg-gray-100 transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {!isSidebarCollapsed && <span className="ml-3">{dictionary.adminPanel.updateAccountTitle}</span>}
-          </button>
-          {!isSidebarCollapsed && <LanguageSwitcher isCollapsed={isSidebarCollapsed} />}
+        <div className="p-4 border-t flex justify-center">
+            <button
+              onClick={() => {
+                logout();
+                router.push(`/${lang}/login`);
+              }}
+              title={dictionary.adminPanel.asideMenu.logout}
+              className="flex items-center p-2 rounded hover:bg-gray-100 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              {!isSidebarCollapsed && <span className="ml-3">{dictionary.adminPanel.asideMenu.logout}</span>}
+            </button>
         </div>
       </aside>
 
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto bg-white">
-        <div className={view === 'users' ? '' : 'hidden'}>
+      <main className="flex-1 overflow-y-auto bg-white">
+        <div className={view === 'users' ? 'p-4 md:p-8' : 'hidden'}>
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
           <div className="w-full max-w-4xl mx-auto">
@@ -1188,12 +1258,27 @@ const AdminPanel: React.FC = () => {
                 <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.createUserTitle}</h2>
                 <form onSubmit={handleCreateUser} className="space-y-4">
                   <input type="text" name="alias" value={newUserForm.alias} onChange={handleNewUserFormChange} placeholder="Имя" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
-                  <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="login" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />                  
+                  <input type="text" name="username" value={newUserForm.username} onChange={handleNewUserFormChange} placeholder="login" className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+                  {formErrors.newUser.username && <p className="text-red-500 text-xs mt-1">{formErrors.newUser.username}</p>}
+                  <input type="email" name="email" value={newUserForm.email} onChange={handleNewUserFormChange} placeholder="Email (необязательно)" className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+                  {formErrors.newUser.email && <p className="text-red-500 text-xs mt-1">{formErrors.newUser.email}</p>}
                   <input type="password" name="password" value={newUserForm.password} onChange={handleNewUserFormChange} placeholder={dictionary.adminPanel.passwordPlaceholder} className="w-full p-2 border rounded bg-gray-100 border-gray-300" required />
+                  {isAdmin && userId === '1' && (
+                    <div className="flex items-center">
+                      <input type="checkbox" name="is_admin" checked={newUserForm.is_admin} onChange={handleNewUserFormChange} className="mr-2" />
+                      <label htmlFor="is_admin">Администратор</label>
+                    </div>
+                  )}
                   <div className="flex items-center">
-                    <input type="checkbox" name="is_admin" checked={newUserForm.is_admin} onChange={handleNewUserFormChange} className="mr-2" />
-                    <label htmlFor="is_admin">Администратор</label>
+                    <input type="checkbox" name="sendAuthByEmail" checked={newUserForm.sendAuthByEmail} onChange={handleNewUserFormChange} className="mr-2" disabled={!newUserForm.email} />
+                    <label htmlFor="sendAuthByEmail" className={!newUserForm.email ? 'text-gray-400' : ''}>Отправить данные для входа по email</label>
                   </div>
+                  {!(userId === '1' && newUserForm.is_admin) && (
+                    <div className="flex items-center">
+                      <input type="checkbox" name="notifyByEmail" checked={newUserForm.notifyByEmail} onChange={handleNewUserFormChange} className="mr-2" disabled={!newUserForm.email} />
+                      <label htmlFor="notifyByEmail" className={!newUserForm.email ? 'text-gray-400' : ''}>{dictionary.adminPanel.notifyByEmailLabel}</label>
+                    </div>
+                  )}
                   <button type="submit" className="w-full btn-primary">{dictionary.adminPanel.createUserButton}</button>
                 </form>
               </div>
@@ -1233,6 +1318,27 @@ const AdminPanel: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-gray-700 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-bfe-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          </svg>
+                          {dictionary.adminPanel.notificationsLabel}
+                        </h4>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="sr-only peer"
+                            checked={user.notifyByEmail}
+                            disabled={user.id === userId || user.isAdmin}
+                            onChange={(e) => handleToggleNotify(user.id, e.target.checked)}
+                          />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bfe-green peer-disabled:cursor-not-allowed peer-disabled:opacity-50"></div>
+                        </label>
                       </div>
                     </div>
 
@@ -1326,23 +1432,28 @@ const AdminPanel: React.FC = () => {
         <div className={view === 'files' ? 'h-full' : 'hidden'}>
           <FileManager dictionary={dictionary} />
         </div>
-      </main>
-
-      {isSettingsOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-[fadeIn_0.2s_ease-in-out]">
-          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
-            <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.updateAccountTitle}</h2>
-            <form onSubmit={handleAdminFormSubmit} className="space-y-4">
-              <input type="text" name="username" value={adminForm.username} onChange={handleAdminFormChange} placeholder={`${dictionary.adminPanel.usernamePlaceholder} (optional)`} className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
-              <input type="password" name="password" value={adminForm.password} onChange={handleAdminFormChange} placeholder={`${dictionary.adminPanel.passwordPlaceholder} (optional)`} className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
-              <button type="submit" className="w-full btn-primary">{dictionary.adminPanel.updateAccountButton}</button>
-            </form>
-            <button onClick={() => setIsSettingsOpen(false)} className="w-full btn-secondary mt-2">
-              {dictionary.adminPanel.backButton}
-            </button>
+        <div className={view === 'settings' ? 'p-4 md:p-8' : 'hidden'}>
+          <div className="w-full max-w-md mx-auto space-y-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.updateAccountTitle}</h2>
+              <div className="bg-white border border-gray-200 p-6 rounded-lg">
+                <form onSubmit={handleAdminFormSubmit} className="space-y-4">
+                  <input type="text" name="username" value={adminForm.username} onChange={handleAdminFormChange} placeholder={`${dictionary.adminPanel.usernamePlaceholder} (optional)`} className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+                  {formErrors.settings.username && <p className="text-red-500 text-xs mt-1">{formErrors.settings.username}</p>}
+                  <input type="password" name="password" value={adminForm.password} onChange={handleAdminFormChange} placeholder={`${dictionary.adminPanel.passwordPlaceholder} (optional)`} className="w-full p-2 border rounded bg-gray-100 border-gray-300" />
+                  <button type="submit" className="w-full btn-primary">{dictionary.adminPanel.updateAccountButton}</button>
+                </form>
+              </div>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.language}</h2>
+              <div className="bg-white border border-gray-200 p-6 rounded-lg flex justify-center">
+                <LanguageSwitcher />
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </main>
 
 
 
