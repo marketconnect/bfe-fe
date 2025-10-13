@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import useSWR from 'swr';
-import Head from 'next/head';
+
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -28,7 +29,9 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setError('');
+    setIsSubmitting(true);
     try {
       const { isAdmin } = await login(username, password);
       if (isAdmin) {
@@ -38,6 +41,8 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       setError(dictionary?.loginPage?.error || 'Login failed');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -66,7 +71,21 @@ export default function LoginPage() {
                 id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="flex items-center justify-between">
-              <button className="btn-primary focus:outline-none focus:shadow-outline" type="submit">{dictionary.loginPage.signInButton}</button>
+              <button
+                className="btn-primary focus:outline-none focus:shadow-outline disabled:opacity-70 disabled:cursor-not-allowed"
+                type="submit"
+                disabled={isSubmitting}
+                aria-busy={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="inline-block h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+                    {dictionary.loginPage.signInButtonLoading ?? 'Loading...'}
+                  </span>
+                ) : (
+                  dictionary.loginPage.signInButton
+                )}
+              </button>
             </div>
             {error && <p className="text-red-500 text-xs italic mt-4">{error}</p>}
           </form>

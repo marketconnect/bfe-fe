@@ -9,6 +9,7 @@
     "usernameLabel": "Username",
     "passwordLabel": "Password",
     "signInButton": "Sign In",
+    "signInButtonLoading": "Signing in...",
     "error": "Invalid credentials or server error."
   },
   "dashboard": {

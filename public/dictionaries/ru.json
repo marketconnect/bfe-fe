@@ -9,6 +9,7 @@
     "usernameLabel": "Имя пользователя",
     "passwordLabel": "Пароль",
     "signInButton": "Войти",
+    "signInButtonLoading": "Входим...",
     "error": "Неверные учетные данные или ошибка сервера."
   },
   "dashboard": {
