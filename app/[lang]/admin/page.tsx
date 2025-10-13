@@ -726,6 +726,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       {message && <div className="p-4"><div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">{message}</div></div>}
       {error && <div className="p-4"><div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">{error}</div></div>}
 
+      <div className="flex-1 overflow-y-auto bg-white/70 dark:bg-zinc-900/60 border border-gray-200/80 dark:border-white/10 p-6 rounded-xl ring-1 ring-black/5 shadow-sm hover:shadow-md transition-shadow duration-200 md:hover:translate-y-[1px] animate-[fadeIn_0.3s_ease-in-out] mt-8 backdrop-blur-sm">
       {/* Breadcrumbs */}
       <div className="p-4 flex items-center space-x-2 text-sm text-gray-500">
         {breadcrumbs.map((crumb, i) => (
@@ -750,7 +751,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
+      <div className="px-4 md:px-6 py-4" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {/* Folders */}
           {(content?.folders || []).map(folder => {
@@ -871,6 +872,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
             );
           })}
         </div>
+      </div>
+
       </div>
 
       {/* Uploads */}
