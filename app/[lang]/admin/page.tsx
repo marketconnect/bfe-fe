@@ -673,28 +673,27 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       
     >
       {/* Selection Toolbar */}
-      {hasSelection && (
-          <div className="flex flex-wrap items-center gap-3 justify-between sticky top-0 z-20 bg-white px-3 md:px-4 py-3 mx-3 md:mx-4 my-3 border-b border-gray-200 shadow-sm rounded-lg">
+          <div className="flex flex-wrap items-center gap-3 justify-between sticky top-0 z-20 bg-white px-3 md:px-4 py-3 mx-3 md:mx-4 my-1.5 border-b border-gray-200 shadow-sm rounded-lg">
             <div className="flex flex-wrap items-center gap-3">
-              <button onClick={handleClearSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50">
+              <button onClick={handleClearSelection} disabled={!hasSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 <span>{`${selectedFiles.size + selectedFolders.size} выбраны`}</span>
               </button>
-              <button onClick={() => setShowDeleteModal(true)} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+              <button onClick={() => setShowDeleteModal(true)} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 <span>Удалить</span>
               </button>
-              <button onClick={() => { setShowMoveModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+              <button onClick={() => { setShowMoveModal(true); setMovePath(''); }} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 9l4 4m0 0l-4 4m4-4H3" /></svg>
                 <span>{dictionary.adminPanel.fileManager.move}</span>
               </button>
-              <button onClick={() => { setShowCopyModal(true); setMovePath(''); }} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md">
+              <button onClick={() => { setShowCopyModal(true); setMovePath(''); }} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 <span>Копировать в</span>
               </button>
               <button
                 onClick={handleDownload}
-                disabled={isDownloading}
+                disabled={!hasSelection || isDownloading}
                 className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -713,7 +712,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
               </select>
               <button
                 onClick={handleSetAccess}
-                disabled={isSettingAccess}
+                disabled={!hasSelection || isSettingAccess}
                 className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
@@ -721,31 +720,32 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
               </button>
             </div>
           </div>
-      )}
       {/* Local Messages */}
       {message && <div className="p-4"><div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">{message}</div></div>}
       {error && <div className="p-4"><div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">{error}</div></div>}
+      
 
-      <div className="flex-1 overflow-y-auto bg-white/70 dark:bg-zinc-900/60 border border-gray-200/80 dark:border-white/10 p-6 rounded-xl ring-1 ring-black/5 shadow-sm hover:shadow-md transition-shadow duration-200 md:hover:translate-y-[1px] animate-[fadeIn_0.3s_ease-in-out] mt-8 backdrop-blur-sm">
+      <div className="flex-1 overflow-y-auto bg-white border border-gray-200 p-6 rounded-lg shadow-sm mx-3 md:mx-4 my-1.5">
       {/* Breadcrumbs */}
-      <div className="p-4 flex items-center space-x-2 text-sm text-gray-500">
+      <div className="p-4 flex items-center space-x-2 text-base text-gray-500">
         {breadcrumbs.map((crumb, i) => (
-          <React.Fragment key={i}> {
-            (() => {
+          <React.Fragment key={i}>
+            {(() => {
               const isLastCrumb = i === breadcrumbs.length - 1;
               const crumbPath = getPathForBreadcrumbIndex(i);
               return (<button
               onClick={() => handleBreadcrumbClick(i)}
-              className={`p-1 rounded-md transition-colors hover:underline disabled:no-underline disabled:cursor-default ${dragOverBreadcrumb === i ? 'bg-blue-200' : ''}`}
+              className={`p-1 rounded-md transition-colors hover:underline disabled:no-underline disabled:cursor-default ${dragOverBreadcrumb === i ? 'bg-blue-200' : ''} ${isLastCrumb ? 'font-semibold text-gray-700' : ''}`}
               disabled={isLastCrumb}
               onDragEnter={(e) => !isLastCrumb && (e.preventDefault(), e.stopPropagation(), setDragOverBreadcrumb(i))}
               onDragLeave={(e) => !isLastCrumb && (e.preventDefault(), e.stopPropagation(), setDragOverBreadcrumb(null))}
               onDragOver={(e) => !isLastCrumb && handleBreadcrumbDragOver(e, i)}
               onDrop={(e) => !isLastCrumb && handleDropMove(crumbPath, e)}
             >{crumb}</button>);
-            })()
-          }
-            {i < breadcrumbs.length - 1 && <span className="text-gray-400">/</span>}
+            })()}
+            {i < breadcrumbs.length - 1 && (
+              <span className="text-gray-400 mx-1">/</span>
+            )}
           </React.Fragment>
         ))}
       </div>
@@ -784,13 +784,13 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
             return (
               <div
                 key={file.key}
-                className={`group relative flex flex-col items-center p-4 rounded-lg transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'} ${file.accessType === 'read_only' ? 'ring-1 ring-amber-300' : ''}`}
+                className={`group relative flex flex-col items-center p-4 rounded-lg transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'} ${file.accessType === 'read_only' ? 'ring-1 ring-green-300' : ''}`}
                 draggable={!isMoving}
                 onDragStart={(e) => handleDragStart(e, file.key, false)}
                 onDragEnd={handleDragEnd}
               >
                 {file.accessType === 'read_only' && (
-                  <span className="absolute top-2 left-2 p-1 rounded bg-amber-100 text-amber-700 flex items-center justify-center leading-none" title="Только чтение">
+                  <span className="absolute top-2 left-2 p-1 rounded bg-green-100 text-green-700 flex items-center justify-center leading-none" title="Только чтение">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
@@ -799,64 +799,12 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                 <div className="flex flex-col items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
                   <div className="mt-2 w-full flex items-center justify-center gap-2">
-                    <span className="text-sm text-center truncate">{file.key.split('/').pop()}</span>
-                    <div
-                      className="relative"
-                      onMouseEnter={() => {
-                        if (viewersHoverTimeout.current) window.clearTimeout(viewersHoverTimeout.current);
-                        setViewersOpenFor(file.key);
-                      }}
-                      onMouseLeave={() => {
-                        viewersHoverTimeout.current = window.setTimeout(() => setViewersOpenFor(null), 150);
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setViewersOpenFor(prev => (prev === file.key ? null : file.key))}
-                        className="p-1 rounded hover:bg-gray-100"
-                        aria-haspopup="listbox"
-                        aria-expanded={viewersOpenFor === file.key}
-                        title={dictionary.adminPanel.fileManager.viewers}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      {viewersOpenFor === file.key && (
-                        <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-64 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg p-2 text-sm">
-                          {Array.isArray(file.accessList) && file.accessList.length > 0 ? (
-                            file.accessList
-                              .slice()
-                              .sort((a, b) => {
-                                const at = a.lastViewedAt ? new Date(a.lastViewedAt).getTime() : -Infinity;
-                                const bt = b.lastViewedAt ? new Date(b.lastViewedAt).getTime() : -Infinity;
-                                return bt - at;
-                              })
-                              .map((a, idx) => {
-                                const viewed = !!a.lastViewedAt;
-                                return (
-                                  <div key={idx} className="px-2 py-1 rounded hover:bg-gray-50">
-                                    <div
-                                      className="font-medium text-gray-700 truncate"
-                                      title={(a.alias || a.username) || ''}
-                                    >
-                                      {a.alias || a.username}
-                                    </div>
-                                    <div className={`text-xs ${viewed ? 'text-green-600' : 'text-gray-500'}`}>
-                                      {viewed
-                                        ? `${dictionary.adminPanel.fileManager.lastViewedAt}: ${formatDateTime(a.lastViewedAt)}`
-                                        : dictionary.adminPanel.fileManager.neverViewed}
-                                    </div>
-                                  </div>
-                                );
-                              })
-                          ) : (
-                            <div className="text-xs text-gray-500 px-2 py-1">{dictionary.adminPanel.fileManager.noAccessInfo}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <span className="text-sm text-center truncate" title={file.key.split('/').pop()}>
+                      {(() => {
+                        const fileName = file.key.split('/').pop();
+                        return fileName && fileName.length > 20 ? fileName.substring(0, 17) + '...' : fileName;
+                      })()}
+                    </span>
                   </div>
 
                   {file.createdAt && (
@@ -864,6 +812,60 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                       {formatDate(file.createdAt)}
                     </div>
                   )}
+
+                  <div
+                    className="relative mt-1"
+                    onMouseEnter={() => {
+                      if (viewersHoverTimeout.current) window.clearTimeout(viewersHoverTimeout.current);
+                      viewersHoverTimeout.current = window.setTimeout(() => setViewersOpenFor(file.key), 1000);
+                    }}
+                    onMouseLeave={() => {
+                      if (viewersHoverTimeout.current) window.clearTimeout(viewersHoverTimeout.current);
+                      setViewersOpenFor(null);
+                    }}
+                  >
+                    <div
+                      className="cursor-pointer p-1 rounded hover:bg-gray-100 inline-block"
+                      aria-haspopup="listbox"
+                      aria-expanded={viewersOpenFor === file.key}
+                      title={dictionary.adminPanel.fileManager.viewers}
+                    >
+                      <span className="text-xs text-gray-500 underline">{dictionary.adminPanel.fileManager.viewers || "Viewers"}</span>
+                    </div>
+                    {viewersOpenFor === file.key && (
+                      <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-64 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg p-2 text-sm">
+                        {Array.isArray(file.accessList) && file.accessList.length > 0 ? (
+                          file.accessList
+                            .slice()
+                            .sort((a, b) => {
+                              const at = a.lastViewedAt ? new Date(a.lastViewedAt).getTime() : -Infinity;
+                              const bt = b.lastViewedAt ? new Date(b.lastViewedAt).getTime() : -Infinity;
+                              return bt - at;
+                            })
+                            .map((a, idx) => {
+                              const viewed = !!a.lastViewedAt;
+                              return (
+                                <div key={idx} className="px-2 py-1 rounded hover:bg-gray-50">
+                                  <div
+                                    className="font-medium text-gray-700 truncate"
+                                    title={(a.alias || a.username) || ''}
+                                  >
+                                    {a.alias || a.username}
+                                  </div>
+                                  <div className={`text-xs ${viewed ? 'text-green-600' : 'text-gray-500'}`}>
+                                    {viewed
+                                      ? `${dictionary.adminPanel.fileManager.lastViewedAt}: ${formatDateTime(a.lastViewedAt)}`
+                                      : dictionary.adminPanel.fileManager.neverViewed}
+                                  </div>
+                                </div>
+                              );
+                            })
+                        ) : (
+                          <div className="text-xs text-gray-500 px-2 py-1">{dictionary.adminPanel.fileManager.noAccessInfo}</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => handleFileSelect(file.key)} className={`absolute top-2 right-2 h-6 w-6 rounded-full flex items-center justify-center border-2 transition-all ${isSelected ? 'opacity-100 bg-blue-500 border-blue-500' : 'opacity-0 group-hover:opacity-100 bg-white border-gray-300 hover:border-blue-400'}`}>
                   {isSelected && <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
@@ -1432,7 +1434,7 @@ const AdminPanel: React.FC = () => {
   if (dictError) return <div>Failed to load translations.</div>;
 
   return (
-    <div className="w-full h-screen font-inter flex flex-col md:flex-row overflow-x-hidden">
+    <div className="w-full h-screen flex flex-col md:flex-row overflow-x-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex justify-between items-center p-4 border-b bg-white">
         <img src="/android-chrome-192x192.png" alt="Admin Logo" className="h-8 w-auto" />
@@ -1611,7 +1613,7 @@ const AdminPanel: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white/70 dark:bg-zinc-900/60 border border-gray-200/80 dark:border-white/10 p-6 rounded-xl ring-1 ring-black/5 shadow-sm hover:shadow-md transition-shadow duration-200 md:hover:translate-y-[1px] animate-[fadeIn_0.3s_ease-in-out] mt-8 backdrop-blur-sm">
+            <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm mt-8">
               <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.manageUsersTitle}</h2>
               {usersLoading && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

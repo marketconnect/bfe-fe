@@ -7,6 +7,7 @@ import "../globals.css";
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["600","700"], variable: '--font-montserrat' });
 
+
 export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
@@ -40,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang={params.lang} className="h-full">
-      <body className={`${inter.variable} ${montserrat.variable} font-inter h-full`}>
+      <body className={`${inter.variable} ${montserrat.variable} h-full`}>
         <AuthProvider>
           <main className="h-full w-full">
             {children}
