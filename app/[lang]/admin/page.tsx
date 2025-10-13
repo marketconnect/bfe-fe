@@ -1404,7 +1404,7 @@ const AdminPanel: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 p-6 rounded-lg animate-[fadeIn_0.3s_ease-in-out] mt-8">
+            <div className="bg-white/70 dark:bg-zinc-900/60 border border-gray-200/80 dark:border-white/10 p-6 rounded-xl ring-1 ring-black/5 shadow-sm hover:shadow-md transition-shadow duration-200 md:hover:translate-y-[1px] animate-[fadeIn_0.3s_ease-in-out] mt-8 backdrop-blur-sm">
               <h2 className="text-2xl font-bold mb-4">{dictionary.adminPanel.manageUsersTitle}</h2>
               {usersLoading && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
