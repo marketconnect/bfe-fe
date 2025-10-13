@@ -1511,10 +1511,10 @@ const AdminPanel: React.FC = () => {
       </aside>
 
       <main className="flex-1 overflow-y-auto">
-        <div className={view === 'users' ? 'p-4 md:p-8' : 'hidden'}>
+        <div className={view === 'users' ? 'px-4 md:px-8' : 'hidden'}>
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full">
             <div className="flex justify-end mb-6">
               <button
                 type="button"
