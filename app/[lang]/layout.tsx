@@ -39,7 +39,7 @@ export default function RootLayout({
   params: { lang: Locale };
 }>) {
   return (
-    <html lang={params.lang} className="h-full bg-gray-50">
+    <html lang={params.lang} className="h-full">
       <body className={`${inter.variable} ${montserrat.variable} font-inter h-full`}>
         <AuthProvider>
           <main className="h-full w-full">

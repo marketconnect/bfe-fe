@@ -91,6 +91,9 @@
       "uploads": "Uploads",
       "done": "Done",
       "uploadFailed": "Upload failed",
+      "setAccess": "Access",
+      "applyAccess": "Apply",
+      "settingAccess": "Applying...",
       "createFolder": "Create Folder",
       "folderName": "Folder name",
       "cancel": "Cancel",
@@ -129,7 +132,8 @@
       "permissionRevoked": "Permission revoked successfully.",
       "filesDeletedSuccess": "Files deleted successfully.",
       "itemsMovedSuccess": "Items moved successfully.",
-      "itemsCopiedSuccess": "Items copied successfully."
+      "itemsCopiedSuccess": "Items copied successfully.",
+      "permissionsUpdated": "Permissions updated successfully."
     },
     "errors": {
       "fetchUsers": "Failed to fetch users",
@@ -146,7 +150,8 @@
       "moveItemsError": "Failed to move items.",
       "copyItemsError": "Failed to copy items.",
       "cannotMoveToSameFolder": "Cannot move items to the same folder they are already in.",
-      "cannotMoveParentToChild": "Cannot move a parent folder into one of its subfolders."
+      "cannotMoveParentToChild": "Cannot move a parent folder into one of its subfolders.",
+      "setPermissionsError": "Failed to set permissions."
     }
   }
 }

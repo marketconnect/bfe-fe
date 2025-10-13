@@ -61,6 +61,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
   const [moveContent, setMoveContent] = useState<GetFilesResponse | null>(null);
   const [moveLoading, setMoveLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [accessTypeToSet, setAccessTypeToSet] = useState<'read_only' | 'read_and_download'>('read_only');
+  const [isSettingAccess, setIsSettingAccess] = useState(false);
 
   const fetchContent = useCallback(async () => {
     if (!token) return;
@@ -389,6 +391,29 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     }
   };
 
+  const handleSetAccess = async () => {
+    if (!token) return;
+    const paths = Array.from(selectedFiles).concat(Array.from(selectedFolders));
+    if (paths.length === 0) return;
+
+    setIsSettingAccess(true);
+    setError('');
+    setMessage('');
+
+    try {
+      await api.setPermissions(token, paths, accessTypeToSet);
+      setMessage(dictionary.adminPanel.messages.permissionsUpdated);
+      setTimeout(() => setMessage(''), 3000);
+      handleClearSelection();
+      fetchContent();
+    } catch (err: any) {
+      setError(dictionary.adminPanel.errors.setPermissionsError || err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setIsSettingAccess(false);
+    }
+  };
+
   const handleDownload = async () => {
     if (!token) return;
     const filesToDownload = Array.from(selectedFiles);
@@ -647,11 +672,10 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       className="h-full flex flex-col relative"
       
     >
-      {/* Header */}
-      <div className="flex justify-between items-center p-2 min-h-[69px]">
-        <div className="flex-1">
-          {hasSelection ? (
-            <div className="flex flex-wrap items-center gap-4">
+      {/* Selection Toolbar */}
+      {hasSelection && (
+          <div className="flex flex-wrap items-center gap-3 justify-between sticky top-0 z-20 bg-white px-3 md:px-4 py-3 mx-3 md:mx-4 my-3 border-b border-gray-200 shadow-sm rounded-lg">
+            <div className="flex flex-wrap items-center gap-3">
               <button onClick={handleClearSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 <span>{`${selectedFiles.size + selectedFolders.size} выбраны`}</span>
@@ -677,41 +701,27 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                 <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
               </button>
             </div>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <div className="relative" ref={createDropdownRef}>
-                <button onClick={() => setShowCreateDropdown(!showCreateDropdown)} className="btn-primary flex items-center space-x-2">
-                  <span>{dictionary.adminPanel.fileManager.create}</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                {showCreateDropdown && (
-                  <div className="absolute mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                    <button onClick={() => { setShowCreateFolderModal(true); setShowCreateDropdown(false); }} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.folder}</button>
-                    <button onClick={() => fileInputRef.current?.click()} className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">{dictionary.adminPanel.fileManager.uploadFile}</button>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-700">{dictionary.adminPanel.fileManager.setAccess}</label>
+              <select
+                value={accessTypeToSet}
+                onChange={(e) => setAccessTypeToSet(e.target.value as 'read_only' | 'read_and_download')}
+                className="p-1.5 border rounded-md bg-white text-sm"
+              >
+                <option value="read_and_download">{dictionary.adminPanel.fileManager.access.read_and_download}</option>
+                <option value="read_only">{dictionary.adminPanel.fileManager.access.read_only}</option>
+              </select>
+              <button
+                onClick={handleSetAccess}
+                disabled={isSettingAccess}
+                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                <span>{isSettingAccess ? dictionary.adminPanel.fileManager.settingAccess : dictionary.adminPanel.fileManager.applyAccess}</span>
+              </button>
             </div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {!hasSelection && (
-            <button
-              onClick={fetchContent}
-              disabled={loading}
-              title={loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}
-              className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A7.5 7.5 0 0119.5 15M19.418 15A7.5 7.5 0 014.5 9" />
-              </svg>
-              <span>{loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
-            </button>
-          )}
-          <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
-        </div>
-      </div>
-
+          </div>
+      )}
       {/* Local Messages */}
       {message && <div className="p-4"><div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">{message}</div></div>}
       {error && <div className="p-4"><div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">{error}</div></div>}
@@ -740,8 +750,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 overflow-y-auto" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {/* Folders */}
           {(content?.folders || []).map(folder => {
             const isSelected = selectedFolders.has(folder);
@@ -779,9 +789,9 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                 onDragEnd={handleDragEnd}
               >
                 {file.accessType === 'read_only' && (
-                  <span className="absolute top-2 left-2 p-1 rounded bg-amber-100 text-amber-700" title="Только чтение">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 11V7a4 4 0 10-8 0v4m1 0h14a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2z" />
+                  <span className="absolute top-2 left-2 p-1 rounded bg-amber-100 text-amber-700 flex items-center justify-center leading-none" title="Только чтение">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                   </span>
                 )}
@@ -1419,7 +1429,7 @@ const AdminPanel: React.FC = () => {
   if (dictError) return <div>Failed to load translations.</div>;
 
   return (
-    <div className="w-full h-screen font-inter flex flex-col md:flex-row bg-gray-50 overflow-x-hidden">
+    <div className="w-full h-screen font-inter flex flex-col md:flex-row overflow-x-hidden">
       {/* Mobile Header */}
       <div className="md:hidden flex justify-between items-center p-4 border-b bg-white">
         <img src="/android-chrome-192x192.png" alt="Admin Logo" className="h-8 w-auto" />
@@ -1495,7 +1505,7 @@ const AdminPanel: React.FC = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto bg-white">
+      <main className="flex-1 overflow-y-auto">
         <div className={view === 'users' ? 'p-4 md:p-8' : 'hidden'}>
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}

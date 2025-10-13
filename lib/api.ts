@@ -418,3 +418,25 @@ export const copyItems = async (token: string, sources: string[], destination: s
 
   return response.json();
 };
+
+export const setPermissions = async (
+  token: string,
+  paths: string[],
+  accessType: 'read_only' | 'read_and_download'
+): Promise<MessageResponse> => {
+  const response = await fetch(`${BASE_PATH}/admin/storage/permissions`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ paths, accessType }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to set permissions');
+  }
+
+  return response.json();
+};

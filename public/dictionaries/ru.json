@@ -91,6 +91,9 @@
       "uploads": "Загрузки",
       "done": "Готово",
       "uploadFailed": "Ошибка загрузки",
+      "setAccess": "Доступ",
+      "applyAccess": "Применить",
+      "settingAccess": "Применение...",
       "createFolder": "Создать папку",
       "folderName": "Имя папки",
       "cancel": "Отмена",
@@ -129,7 +132,8 @@
       "permissionRevoked": "Разрешение успешно отозвано.",
       "filesDeletedSuccess": "Файлы успешно удалены.",
       "itemsMovedSuccess": "Элементы успешно перемещены.",
-      "itemsCopiedSuccess": "Элементы успешно скопированы."
+      "itemsCopiedSuccess": "Элементы успешно скопированы.",
+      "permissionsUpdated": "Права доступа успешно обновлены."
     },
     "errors": {
       "fetchUsers": "Не удалось получить пользователей",
@@ -146,7 +150,8 @@
       "moveItemsError": "Не удалось переместить элементы.",
       "copyItemsError": "Не удалось скопировать элементы.",
       "cannotMoveToSameFolder": "Нельзя переместить элементы в ту же папку, где они находятся.",
-      "cannotMoveParentToChild": "Нельзя переместить родительскую папку в одну из ее дочерних папок."
+      "cannotMoveParentToChild": "Нельзя переместить родительскую папку в одну из ее дочерних папок.",
+      "setPermissionsError": "Не удалось установить права доступа."
     }
   }
 }

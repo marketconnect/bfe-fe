@@ -11,6 +11,7 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
+  background-color: #f9fafc;
 }
 
 #__next {
@@ -64,4 +65,3 @@ body {
     --background-end-rgb: 0, 0, 0;
   }
 }
-
