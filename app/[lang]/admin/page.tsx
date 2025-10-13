@@ -987,6 +987,11 @@ const AdminPanel: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [allFolders, setAllFolders] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState<{ [key: string]: boolean }>({});
+  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
+  const [folderPickerUserId, setFolderPickerUserId] = useState<string | null>(null);
+  const [folderPickerPath, setFolderPickerPath] = useState('');
+  const [folderPickerContent, setFolderPickerContent] = useState<GetFilesResponse | null>(null);
+  const [folderPickerLoading, setFolderPickerLoading] = useState(true);
   const params = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -1026,6 +1031,22 @@ const AdminPanel: React.FC = () => {
     if (dictionary) fetchUsers();
     if (dictionary) fetchAllFolders();
   }, [token, dictionary]);
+
+  useEffect(() => {
+    if (!folderPickerOpen || !token) return;
+    const load = async () => {
+      setFolderPickerLoading(true);
+      try {
+        const data = await api.getFiles(token, folderPickerPath);
+        setFolderPickerContent(data);
+      } catch (err: any) {
+        console.error("Error fetching folders for picker:", err.message);
+      } finally {
+        setFolderPickerLoading(false);
+      }
+    };
+    load();
+  }, [folderPickerOpen, folderPickerPath, token]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1219,6 +1240,18 @@ const AdminPanel: React.FC = () => {
     } catch (err) {
       handleError(err, dictionary.adminPanel.errors.revokePermission);
     }
+  };
+
+  const pickerBreadcrumbs = (() => {
+    const parts = folderPickerPath.split('/').filter(Boolean);
+    const myFilesText = dictionary?.adminPanel?.fileManager?.myFiles || 'My Files';
+    return [myFilesText, ...parts];
+  })();
+
+  const getPickerPathForIndex = (index: number): string => {
+    if (index === 0) return '';
+    const parts = folderPickerPath.split('/').filter(Boolean);
+    return parts.slice(0, index).join('/') + '/';
   };
 
   if (!dictionary) return <div>Loading...</div>;
@@ -1589,6 +1622,16 @@ const AdminPanel: React.FC = () => {
                           </div>
                         </div>
                         <button
+                          type="button"
+                          onClick={() => { setFolderPickerUserId(user.id); setFolderPickerPath(''); setFolderPickerOpen(true); }}
+                          className="p-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                          title="Выбрать из дерева"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                          </svg>
+                        </button>
+                        <button
                           type="submit"
                           className="p-3 bg-bfe-orange text-white rounded-lg hover:bg-bfe-orange-light transition-colors flex items-center justify-center"
                           title={dictionary.adminPanel.addPermissionButtonTitle}
@@ -1673,6 +1716,71 @@ const AdminPanel: React.FC = () => {
                 <button type="submit" className="btn-primary">{dictionary.adminPanel.createUserButton}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {folderPickerOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl h-3/4 flex flex-col">
+            <h2 className="text-xl font-bold mb-4">{dictionary?.adminPanel?.fileManager?.selectDestinationFolder || 'Выберите папку'}</h2>
+
+            <div className="p-2 border-t border-b flex items-center space-x-2 text-sm text-gray-500 bg-gray-50 rounded-md">
+              {pickerBreadcrumbs.map((crumb, i) => (
+                <React.Fragment key={i}>
+                  <button
+                    onClick={() => setFolderPickerPath(getPickerPathForIndex(i))}
+                    className="hover:underline disabled:no-underline disabled:cursor-default"
+                    disabled={i === pickerBreadcrumbs.length - 1}
+                  >
+                    {crumb}
+                  </button>
+                  {i < pickerBreadcrumbs.length - 1 && <span className="text-gray-400">/</span>}
+                </React.Fragment>
+              ))}
+            </div>
+
+            <div className="flex-1 py-4 overflow-y-auto">
+              {folderPickerLoading ? (
+                <p>Loading...</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {(folderPickerContent?.folders || []).map(folder => (
+                    <div
+                      key={folder}
+                      onClick={() => setFolderPickerPath(folder)}
+                      className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-100 cursor-pointer"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" /></svg>
+                      <span className="mt-2 text-sm text-center truncate w-full">{folder.split('/').filter(Boolean).pop()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-4 mt-4 border-t pt-4">
+              <button
+                type="button"
+                onClick={() => { setFolderPickerOpen(false); setFolderPickerUserId(null); }}
+                className="btn-secondary"
+              >
+                {dictionary?.adminPanel?.fileManager?.cancel || 'Отмена'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (folderPickerUserId && folderPickerPath) {
+                    setPermissionForms(prev => ({ ...prev, [folderPickerUserId]: folderPickerPath }));
+                    setFolderPickerOpen(false);
+                    setFolderPickerUserId(null);
+                  }
+                }}
+                className="btn-primary disabled:opacity-50"
+                disabled={!folderPickerUserId || !folderPickerPath}
+              >
+                {dictionary?.adminPanel?.users?.folderPicker?.select || 'Выбрать'}
+              </button>
+            </div>
           </div>
         </div>
       )}

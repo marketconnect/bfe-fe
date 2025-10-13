@@ -78,7 +78,8 @@
       },
       "skeleton": { "loading": "Loading..." },
       "badges": { "admin": "Admin" },
-      "createUser": { "openDrawer": "Create User", "closeDrawer": "Close" }
+      "createUser": { "openDrawer": "Create User", "closeDrawer": "Close" },
+      "folderPicker": { "select": "Select" }
     },
     "fileManager": {
     "myFiles": "My Files",

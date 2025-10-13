@@ -78,7 +78,8 @@
       },
       "skeleton": { "loading": "Загрузка..." },
       "badges": { "admin": "Админ" },
-      "createUser": { "openDrawer": "Создать пользователя", "closeDrawer": "Закрыть" }
+      "createUser": { "openDrawer": "Создать пользователя", "closeDrawer": "Закрыть" },
+      "folderPicker": { "select": "Выбрать" }
     },
     "fileManager": {
       "myFiles": "Мои файлы",
