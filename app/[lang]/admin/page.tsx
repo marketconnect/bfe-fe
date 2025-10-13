@@ -700,12 +700,12 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                 <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
               </button>
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">{dictionary.adminPanel.fileManager.setAccess}</label>
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <label className="text-sm text-gray-700 truncate">{dictionary.adminPanel.fileManager.setAccess}</label>
               <select
                 value={accessTypeToSet}
                 onChange={(e) => setAccessTypeToSet(e.target.value as 'read_only' | 'read_and_download')}
-                className="p-1.5 border rounded-md bg-white text-sm"
+                className="p-1.5 border rounded-md bg-white text-sm min-w-0 flex-1"
               >
                 <option value="read_and_download">{dictionary.adminPanel.fileManager.access.read_and_download}</option>
                 <option value="read_only">{dictionary.adminPanel.fileManager.access.read_only}</option>
@@ -713,10 +713,10 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
               <button
                 onClick={handleSetAccess}
                 disabled={!hasSelection || isSettingAccess}
-                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed min-w-0 flex-shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                <span>{isSettingAccess ? dictionary.adminPanel.fileManager.settingAccess : dictionary.adminPanel.fileManager.applyAccess}</span>
+                <span className="truncate">{isSettingAccess ? dictionary.adminPanel.fileManager.settingAccess : dictionary.adminPanel.fileManager.applyAccess}</span>
               </button>
             </div>
           </div>
