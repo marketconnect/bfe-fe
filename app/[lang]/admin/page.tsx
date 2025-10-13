@@ -1760,8 +1760,8 @@ const AdminPanel: React.FC = () => {
                 {filteredUsers.map(user => (
                   <div key={user.id} className="group bg-white/95 backdrop-blur-sm border border-gray-200/60 rounded-2xl p-6 ring-1 ring-black/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-[fadeIn_0.3s_ease-in-out]">
                     {/* Card Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center space-x-4">
+                    <div className="flex flex-col sm:flex-row gap-4 sm:items-start sm:justify-between mb-6">
+                      <div className="flex items-center space-x-4 min-w-0">
                         <div className="relative">
                           <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                             {(user.alias || user.username).charAt(0).toUpperCase()}
@@ -1775,7 +1775,7 @@ const AdminPanel: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900 mb-1">{user.alias || user.username}</h3>
+                          <h3 className="text-xl font-bold text-gray-900 mb-1 truncate">{user.alias || user.username}</h3>
                           <div className="flex items-center text-sm text-gray-600 mb-1">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -1787,7 +1787,7 @@ const AdminPanel: React.FC = () => {
                       </div>
                       
                       {/* Action Buttons */}
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-shrink-0 self-end sm:self-auto">
                         <button
                           onClick={() => setUserToReset(user)}
                           className="p-2.5 rounded-xl hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-all duration-200 hover:scale-105 group/btn"
