@@ -1460,7 +1460,7 @@ const AdminPanel: React.FC = () => {
                       <div className="font-medium">{user.alias || user.username}</div>
                       <div className="text-gray-500">{user.username}</div>
                       <div className="text-gray-500 hidden md:block">{(user as any).email || '-'}</div>
-                      <div>{user.isAdmin ? <span className="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700">{dictionary.adminPanel.users.badges.admin}</span> : null}</div>
+                      <div>{user.isAdmin ? <span className="px-2 py-1 text-xs rounded bg-orange-100/80 text-orange-700">{dictionary.adminPanel.users.badges.admin}</span> : null}</div>
                       <div className="flex items-center justify-end gap-2">
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -1497,7 +1497,7 @@ const AdminPanel: React.FC = () => {
               </div>
               <div className={`${usersViewMode !== 'cards' || usersLoading || filteredUsers.length === 0 ? 'hidden' : ''} space-y-6`}>
                 {filteredUsers.map(user => (
-                  <div key={user.id} className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-[fadeIn_0.3s_ease-in-out]">
+                  <div key={user.id} className="bg-white/80 dark:bg-zinc-900/60 border border-gray-200/80 dark:border-white/10 rounded-xl p-5 md:p-6 ring-1 ring-black/5 shadow-sm hover:shadow-md transition-shadow duration-200 md:hover:translate-y-[1px] animate-[fadeIn_0.3s_ease-in-out] backdrop-blur-sm">
                     <div className="flex justify-between items-center mb-4">
                       <div>
                         <h3 className="text-xl font-semibold text-gray-800 font-montserrat">{user.alias || user.username}</h3>
