@@ -131,7 +131,31 @@ export const getFiles = async (token: string, path: string = ''): Promise<GetFil
     throw new Error(errorData.details || errorData.error || 'Failed to fetch files');
   }
 
-  return response.json();
+  const raw = await response.json();
+
+  const normalize = (data: any): GetFilesResponse => {
+    const path = data?.path ?? '';
+    const folders: string[] = Array.isArray(data?.folders) ? data.folders : [];
+    const filesRaw: any[] = Array.isArray(data?.files) ? data.files : [];
+    const files = filesRaw.map((f) => {
+      const accessListRaw: any[] = Array.isArray(f?.accessList ?? f?.access_list) ? (f.accessList ?? f.access_list) : [];
+      const accessList = accessListRaw.map((a) => ({
+        username: a?.username ?? '',
+        alias: a?.alias ?? '',
+        lastViewedAt: a?.lastViewedAt ?? a?.last_viewed_at ?? null,
+      }));
+      return {
+        key: f?.key ?? '',
+        url: f?.url ?? undefined,
+        createdAt: f?.createdAt ?? f?.created_at ?? undefined,
+        accessType: f?.accessType ?? f?.access_type ?? undefined,
+        accessList,
+      };
+    });
+    return { path, folders, files };
+  };
+
+  return normalize(raw);
 };
 
 export const downloadArchive = async (token: string, keys: string[], folders: string[]): Promise<void> => {
@@ -394,4 +418,3 @@ export const copyItems = async (token: string, sources: string[], destination: s
 
   return response.json();
 };
-

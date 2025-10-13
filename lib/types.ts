@@ -41,10 +41,22 @@ export interface FileWithURL {
   url?: string;
 }
 
+export interface FileAccessEntry {
+  username: string;
+  alias?: string;
+  lastViewedAt: string | null;
+}
+
+export interface FileEntry extends FileWithURL {
+  createdAt?: string;
+  accessType?: string;
+  accessList?: FileAccessEntry[];
+}
+
 export interface GetFilesResponse {
   path: string;
   folders: string[];
-  files: FileWithURL[];
+  files: FileEntry[];
 }
 
 export interface GetAllFoldersResponse {
@@ -63,4 +75,3 @@ export interface Upload {
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
 }
-

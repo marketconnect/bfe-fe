@@ -107,7 +107,17 @@
       "moving": "Moving...",
       "copyItemsTitle": "Copy Items",
       "copyHere": "Copy Here",
-      "copying": "Copying..."
+      "copying": "Copying...",
+      "createdAt": "Created",
+      "viewers": "Views",
+      "neverViewed": "Never viewed",
+      "lastViewedAt": "Last viewed",
+      "access": {
+        "read_and_download": "Read & Download",
+        "read_only": "Read only"
+      },
+      "more": "+{count} more",
+      "noAccessInfo": "No access data"
     },
     "messages": {
       "adminUpdated": "Admin account updated. You may need to log in again.",
