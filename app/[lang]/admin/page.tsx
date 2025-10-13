@@ -700,20 +700,22 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                 <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
               </button>
             </div>
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
-              <label className="text-sm text-gray-700 truncate">{dictionary.adminPanel.fileManager.setAccess}</label>
-              <select
-                value={accessTypeToSet}
-                onChange={(e) => setAccessTypeToSet(e.target.value as 'read_only' | 'read_and_download')}
-                className="p-1.5 border rounded-md bg-white text-sm min-w-0 flex-1"
-              >
-                <option value="read_and_download">{dictionary.adminPanel.fileManager.access.read_and_download}</option>
-                <option value="read_only">{dictionary.adminPanel.fileManager.access.read_only}</option>
-              </select>
+            <div className="flex flex-col md:flex-row md:items-center gap-2 min-w-0 w-full md:w-auto">
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <label className="text-sm text-gray-700 truncate flex-1">{dictionary.adminPanel.fileManager.setAccess}</label>
+                <select
+                  value={accessTypeToSet}
+                  onChange={(e) => setAccessTypeToSet(e.target.value as 'read_only' | 'read_and_download')}
+                  className="p-1.5 border rounded-md bg-white text-sm min-w-0 flex-1"
+                >
+                  <option value="read_and_download">{dictionary.adminPanel.fileManager.access.read_and_download}</option>
+                  <option value="read_only">{dictionary.adminPanel.fileManager.access.read_only}</option>
+                </select>
+              </div>
               <button
                 onClick={handleSetAccess}
                 disabled={!hasSelection || isSettingAccess}
-                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed min-w-0 flex-shrink-0"
+                className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed min-w-0 flex-1 md:flex-none"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 block" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                 <span className="truncate">{isSettingAccess ? dictionary.adminPanel.fileManager.settingAccess : dictionary.adminPanel.fileManager.applyAccess}</span>
@@ -833,7 +835,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                       <span className="text-xs text-gray-500 underline">{dictionary.adminPanel.fileManager.viewers || "Viewers"}</span>
                     </div>
                     {viewersOpenFor === file.key && (
-                      <div className="absolute left-1/2 -translate-x-1/2 mt-2 z-50 w-64 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg p-2 text-sm">
+                      <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 mt-2 z-50 w-64 max-w-[80vw] max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg p-2 text-sm">
                         {Array.isArray(file.accessList) && file.accessList.length > 0 ? (
                           file.accessList
                             .slice()
