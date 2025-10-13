@@ -1204,13 +1204,24 @@ const AdminPanel: React.FC = () => {
     setShowDropdown({ ...showDropdown, [userId]: false });
   };
 
-  const handleAddPermission = async (e: FormEvent, userId: string) => {
+  const handleAddPermission = async (e: FormEvent, targetUserId: string) => {
     e.preventDefault();
-    const folderPrefix = permissionForms[userId];
-    if (!token || !folderPrefix) return;
+    let folderPrefixInput = permissionForms[targetUserId];
+    if (!token || !folderPrefixInput) return;
 
- 
-    const user = users.find(u => u.id === userId);
+    // Normalize: ensure admin root prefix for regular admin and single trailing slash
+    let folderPrefix = folderPrefixInput.trim().replace(/^\/+/, '');
+    const adminIdStr = userId ? String(userId) : null;
+    if (isAdmin && adminIdStr && adminIdStr !== '1') {
+      if (!folderPrefix.startsWith(adminIdStr + '/')) {
+        folderPrefix = `${adminIdStr}/${folderPrefix}`;
+      }
+    }
+    if (folderPrefix && !/\/$/.test(folderPrefix)) {
+      folderPrefix += '/';
+    }
+
+    const user = users.find(u => u.id === targetUserId);
     if (user && (user.permissions || []).some((p: any) => (p.folderPrefix ?? p.folder_prefix) === folderPrefix)) {
       handleError({ message: dictionary.adminPanel.errors.permissionExists }, dictionary.adminPanel.errors.addPermission);
       return;
@@ -1221,10 +1232,10 @@ const AdminPanel: React.FC = () => {
     }
 
     try {
-      await api.assignPermission(token, userId, folderPrefix);
+      await api.assignPermission(token, targetUserId, folderPrefix);
       showMessage(dictionary.adminPanel.messages.permissionAdded);
-      setPermissionForms(prev => ({ ...prev, [userId]: '' }));
-      setShowDropdown(prev => ({ ...prev, [userId]: false }));
+      setPermissionForms(prev => ({ ...prev, [targetUserId]: '' }));
+      setShowDropdown(prev => ({ ...prev, [targetUserId]: false }));
       fetchUsers();
     } catch (err) {
       handleError(err, dictionary.adminPanel.errors.addPermission);
@@ -1242,10 +1253,38 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const formatDisplayPath = (p: string) => {
+    if (!p) return p;
+    const hadTrailingSlash = /\/\s*$/.test(p);
+    // Normalize: trim spaces and remove leading slashes
+    const s = p.trim().replace(/^\/+/, '');
+    const slashIndex = s.indexOf('/');
+    if (slashIndex === -1) {
+      // Single segment only
+      return s;
+    }
+    const first = s.slice(0, slashIndex);
+    const rest = s.slice(slashIndex + 1);
+    const adminId = userId ? String(userId) : null;
+    // Hide if first equals current admin ID OR looks like a long numeric ID
+    if ((adminId && first === adminId) || /^\d{16,}$/.test(first)) {
+      // Preserve at most one trailing slash
+      return rest + (hadTrailingSlash && rest && !/\/\s*$/.test(rest) ? '/' : '');
+    }
+    // No hiding needed: return normalized as-is (do not duplicate slash)
+    return s;
+  };
+
   const pickerBreadcrumbs = (() => {
     const parts = folderPickerPath.split('/').filter(Boolean);
     const myFilesText = dictionary?.adminPanel?.fileManager?.myFiles || 'My Files';
-    return [myFilesText, ...parts];
+    const crumbs: { label: string; index: number }[] = [{ label: myFilesText, index: 0 }];
+    const hideFirst = parts.length > 0 && ((userId && parts[0] === String(userId)) || /^\d{16,}$/.test(parts[0]));
+    parts.forEach((seg, idx) => {
+      if (hideFirst && idx === 0) return;
+      crumbs.push({ label: seg, index: idx + 1 });
+    });
+    return crumbs;
   })();
 
   const getPickerPathForIndex = (index: number): string => {
@@ -1564,7 +1603,7 @@ const AdminPanel: React.FC = () => {
                             <div key={perm.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                               <div className="flex items-center">
                                 <span className="mr-2">📁</span>
-                                <span className="font-mono text-sm text-gray-700">{perm.folderPrefix}</span>
+                                <span className="font-mono text-sm text-gray-700">{formatDisplayPath((perm as any).folderPrefix ?? (perm as any).folder_prefix ?? '')}</span>
                               </div>
                               <button
                                 onClick={() => handleRevokePermission(perm.id)}
@@ -1590,7 +1629,7 @@ const AdminPanel: React.FC = () => {
                           <div className="relative dropdown-container">
                             <input
                               type="text"
-                              value={permissionForms[user.id] || ''}
+                              value={formatDisplayPath(permissionForms[user.id] || '')}
                               onChange={(e) => handlePermissionFormChange(user.id, e.target.value)}
                               placeholder={dictionary.adminPanel.folderPrefixPlaceholder}
                               className="w-full p-3 pr-10 border rounded-lg bg-gray-50 border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-bfe-orange focus:border-transparent"
@@ -1614,7 +1653,7 @@ const AdminPanel: React.FC = () => {
                                     onClick={() => selectFolder(user.id, folder)}
                                     className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
                                   >
-                                    📁 {folder}
+                                    📁 {formatDisplayPath(folder)}
                                   </button>
                                 ))}
                               </div>
@@ -1728,11 +1767,11 @@ const AdminPanel: React.FC = () => {
               {pickerBreadcrumbs.map((crumb, i) => (
                 <React.Fragment key={i}>
                   <button
-                    onClick={() => setFolderPickerPath(getPickerPathForIndex(i))}
+                    onClick={() => setFolderPickerPath(getPickerPathForIndex(crumb.index))}
                     className="hover:underline disabled:no-underline disabled:cursor-default"
                     disabled={i === pickerBreadcrumbs.length - 1}
                   >
-                    {crumb}
+                    {crumb.label}
                   </button>
                   {i < pickerBreadcrumbs.length - 1 && <span className="text-gray-400">/</span>}
                 </React.Fragment>
