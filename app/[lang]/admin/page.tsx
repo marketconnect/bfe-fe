@@ -1657,7 +1657,7 @@ const AdminPanel: React.FC = () => {
 
             <div className="h-full flex flex-col relative">
               <div className="flex-1 overflow-y-auto bg-white border border-gray-200 p-6 rounded-lg shadow-sm mx-3 md:mx-4 my-1.5">
-                <div className="flex items-center justify-between mb-8">
+                 <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between mb-8">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">{dictionary.adminPanel.manageUsersTitle}</h2>
                   <p className="text-gray-600 text-sm">{dictionary.adminPanel.users.description}</p>
