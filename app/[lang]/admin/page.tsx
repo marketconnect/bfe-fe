@@ -64,6 +64,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
   const [accessTypeToSet, setAccessTypeToSet] = useState<'read_only' | 'read_and_download'>('read_only');
   const [isSettingAccess, setIsSettingAccess] = useState(false);
 
+
+
   const fetchContent = useCallback(async () => {
     if (!token) return;
     setSelectedFiles(new Set());
@@ -695,11 +697,11 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     <div className="flex flex-wrap items-center gap-3">
       <button onClick={handleClearSelection} disabled={!hasSelection} className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-        <span>{`${selectedFiles.size + selectedFolders.size} выбраны`}</span>
+        <span>{dictionary.adminPanel.selection.selected.replace('{count}', String(selectedFiles.size + selectedFolders.size))}</span>
       </button>
       <button onClick={() => setShowDeleteModal(true)} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        <span>Удалить</span>
+        <span>{dictionary.adminPanel.actions.delete}</span>
       </button>
       <button onClick={() => { setShowMoveModal(true); setMovePath(''); }} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 9l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -707,7 +709,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       </button>
       <button onClick={() => { setShowCopyModal(true); setMovePath(''); }} disabled={!hasSelection} className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-        <span>Копировать в</span>
+        <span>{dictionary.adminPanel.actions.copyTo}</span>
       </button>
       <button
         onClick={handleDownload}
@@ -715,7 +717,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
         className="flex items-center space-x-1 text-gray-700 hover:bg-gray-100 p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-        <span>{isDownloading ? 'Скачивание...' : 'Скачать'}</span>
+        <span>{isDownloading ? dictionary.adminPanel.actions.downloading : dictionary.adminPanel.actions.download}</span>
       </button>
     </div>
     <div className="flex flex-col md:flex-row md:items-center gap-2 min-w-0 w-full md:w-auto">
@@ -1405,9 +1407,9 @@ const AdminPanel: React.FC = () => {
     setShowDropdown({ ...showDropdown, [userId]: false });
   };
 
-  const handleAddPermission = async (e: FormEvent, targetUserId: string) => {
+  const handleAddPermission = async (e: FormEvent, targetUserId: string, explicitFolderPath?: string) => {
     e.preventDefault();
-    let folderPrefixInput = permissionForms[targetUserId];
+    let folderPrefixInput = explicitFolderPath ?? permissionForms[targetUserId];
     if (!token || !folderPrefixInput) return;
 
     // Normalize: ensure admin root prefix for regular admin and single trailing slash
@@ -1658,12 +1660,12 @@ const AdminPanel: React.FC = () => {
                 <div className="flex items-center justify-between mb-8">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">{dictionary.adminPanel.manageUsersTitle}</h2>
-                  <p className="text-gray-600 text-sm">Управление пользователями и их правами доступа</p>
+                  <p className="text-gray-600 text-sm">{dictionary.adminPanel.users.description}</p>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border border-blue-200">
                     <span className="text-sm font-medium text-blue-700">
-                      {filteredUsers.length} пользователей
+                      {dictionary.adminPanel.users.userCount.replace('{count}', String(filteredUsers.length))}
                     </span>
                   </div>
                 </div>
@@ -1718,11 +1720,11 @@ const AdminPanel: React.FC = () => {
                   {/* Table Header */}
                       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 rounded-t-2xl border-b border-gray-200/60">
                         <div className="grid grid-cols-2 md:grid-cols-5 items-center text-sm font-semibold text-gray-700">
-                          <div>Пользователь</div>
-                          <div>Логин</div>
-                          <div className="hidden md:block">Email</div>
-                          <div>Папки</div>
-                          <div className="text-right">Действия</div>
+                          <div>{dictionary.adminPanel.users.table.user}</div>
+                          <div>{dictionary.adminPanel.users.table.login}</div>
+                          <div className="hidden md:block">{dictionary.adminPanel.users.table.email}</div>
+                          <div>{dictionary.adminPanel.users.table.folders}</div>
+                          <div className="text-right">{dictionary.adminPanel.users.table.actions}</div>
                         </div>
                       </div>
                   
@@ -2138,18 +2140,17 @@ const AdminPanel: React.FC = () => {
                 type="button"
                 onClick={() => {
                   if (folderPickerUserId && folderPickerPath) {
-                    setPermissionForms(prev => ({ ...prev, [folderPickerUserId]: folderPickerPath }));
+                    
                     const uid = folderPickerUserId;
+                    const newPath = folderPickerPath;
                     const shouldAutoAdd = autoAddAfterPickUserId === uid;
+                    
+                    setPermissionForms(prev => ({ ...prev, [uid]: newPath }));
                     setFolderPickerOpen(false);
                     setFolderPickerUserId(null);
+                    setAutoAddAfterPickUserId(null);
                     if (shouldAutoAdd) {
-                      // автодобавление после выбора в пикере
-                      try {
-                        handleAddPermission({ preventDefault: () => {} } as any, uid);
-                      } finally {
-                        setAutoAddAfterPickUserId(null);
-                      }
+                      handleAddPermission({ preventDefault: () => {} } as any, uid, newPath); 
                     }
                   }
                 }}

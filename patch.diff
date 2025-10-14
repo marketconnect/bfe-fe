@@ -1,0 +1,40 @@
+--- app/[lang]/admin/page.tsx
++++ app/[lang]/admin/page.tsx
+@@ -1580,10 +1580,10 @@
+     setShowDropdown({ ...showDropdown, [userId]: false });
+   };
+ 
+-  const handleAddPermission = async (e: FormEvent, targetUserId: string) => {
++  const handleAddPermission = async (e: FormEvent, targetUserId: string, explicitFolderPath?: string) => {
+     e.preventDefault();
+-    let folderPrefixInput = permissionForms[targetUserId];
++    let folderPrefixInput = explicitFolderPath ?? permissionForms[targetUserId];
+     if (!token || !folderPrefixInput) return;
+ 
+     // Normalize: ensure admin root prefix for regular admin and single trailing slash
+@@ -1938,19 +1938,18 @@
+                 type="button"
+                 onClick={() => {
+                   if (folderPickerUserId && folderPickerPath) {
+-                    setPermissionForms(prev => ({ ...prev, [folderPickerUserId]: folderPickerPath }));
+                     const uid = folderPickerUserId;
++                    const newPath = folderPickerPath;
+                     const shouldAutoAdd = autoAddAfterPickUserId === uid;
++
++                    setPermissionForms(prev => ({ ...prev, [uid]: newPath }));
++
+                     setFolderPickerOpen(false);
+                     setFolderPickerUserId(null);
++                    setAutoAddAfterPickUserId(null);
++
+                     if (shouldAutoAdd) {
+-                      // автодобавление после выбора в пикере
+-                      try {
+-                        handleAddPermission({ preventDefault: () => {} } as any, uid);
+-                      } finally {
+-                        setAutoAddAfterPickUserId(null);
+-                      }
++                      handleAddPermission({ preventDefault: () => {} } as any, uid, newPath);
+                     }
+                   }
+                 }}

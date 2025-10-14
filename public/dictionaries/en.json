@@ -79,7 +79,16 @@
       "skeleton": { "loading": "Loading..." },
       "badges": { "admin": "Admin" },
       "createUser": { "openDrawer": "Create User", "closeDrawer": "Close" },
-      "folderPicker": { "select": "Select" }
+      "folderPicker": { "select": "Select" },
+       "description": "Manage users and their access rights",
+      "userCount": "{count} users",
+      "table": {
+        "user": "User",
+        "login": "Login",
+        "email": "Email",
+        "folders": "Folders",
+        "actions": "Actions"
+      }
     },
     "fileManager": {
     "myFiles": "My Files",
@@ -151,7 +160,56 @@
       "copyItemsError": "Failed to copy items.",
       "cannotMoveToSameFolder": "Cannot move items to the same folder they are already in.",
       "cannotMoveParentToChild": "Cannot move a parent folder into one of its subfolders.",
-      "setPermissionsError": "Failed to set permissions."
+      "setPermissionsError": "Failed to set permissions.",
+        "invalidFolderName": "Folder name cannot contain '/' or '..'",
+      "cannotDetermineRoot": "Cannot determine root folder from selection.",
+      "failedToOpenFile": "Failed to open file"
+    },
+    "actions": {
+      "delete": "Delete",
+      "copyTo": "Copy to",
+      "download": "Download",
+      "downloading": "Downloading...",
+      "save": "Save"
+    },
+    "selection": {
+      "selected": "{count} selected"
+    },
+    "tooltips": {
+      "readOnly": "Read only",
+      "addFolder": "Add folder",
+      "selectFromTree": "Select from tree"
+    },
+    "common": {
+      "loading": "Loading...",
+      "failedToLoadTranslations": "Failed to load translations.",
+      "none": "none"
+    },
+    "altText": {
+      "adminLogo": "Admin Logo"
+    },
+    "validation": {
+      "usernamePattern": "Username can only contain Latin letters, numbers, _, and -.",
+      "invalidEmail": "Please enter a valid email.",
+      "emailRequiredForNotifications": "Email is required to send notifications.",
+      "invalidEmailAddress": "Invalid email address"
+    },
+    "placeholders": {
+      "name": "Name",
+      "login": "Login",
+      "emailOptional": "Email (optional)",
+      "emailExample": "user@example.com"
+    },
+    "labels": {
+      "administrator": "Administrator",
+      "sendAuthByEmail": "Send login credentials by email",
+      "emailNotifications": "Notifications",
+      "emailNotificationsSubtitle": "Email notifications",
+      "folderAccess": "Permissions",
+      "folderAccessSubtitle": "Folder access"
+    },
+    "modals": {
+      "enterEmailTitle": "Enter email"
     }
   }
 }

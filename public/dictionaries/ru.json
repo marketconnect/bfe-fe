@@ -79,7 +79,16 @@
       "skeleton": { "loading": "Загрузка..." },
       "badges": { "admin": "Админ" },
       "createUser": { "openDrawer": "Создать пользователя", "closeDrawer": "Закрыть" },
-      "folderPicker": { "select": "Выбрать" }
+      "folderPicker": { "select": "Выбрать" },
+          "description": "Управление пользователями и их правами доступа",
+      "userCount": "{count} пользователей",
+      "table": {
+        "user": "Пользователь",
+        "login": "Логин",
+        "email": "Email",
+        "folders": "Папки",
+        "actions": "Действия"
+      }
     },
     "fileManager": {
       "myFiles": "Мои файлы",
@@ -151,7 +160,57 @@
       "copyItemsError": "Не удалось скопировать элементы.",
       "cannotMoveToSameFolder": "Нельзя переместить элементы в ту же папку, где они находятся.",
       "cannotMoveParentToChild": "Нельзя переместить родительскую папку в одну из ее дочерних папок.",
-      "setPermissionsError": "Не удалось установить права доступа."
-    }
+      "setPermissionsError": "Не удалось установить права доступа.",
+        "invalidFolderName": "Имя папки не может содержать '/' или '..'",
+      "cannotDetermineRoot": "Невозможно определить корневую папку из выбора.",
+      "failedToOpenFile": "Не удалось открыть файл"
+    },
+        
+"actions": {
+      "delete": "Удалить",
+      "copyTo": "Копировать в",
+      "download": "Скачать",
+      "downloading": "Скачивание...",
+      "save": "Сохранить"
+    },
+    "selection": {
+      "selected": "{count} выбраны"
+    },
+    "tooltips": {
+      "readOnly": "Только чтение",
+      "addFolder": "Добавить папку",
+      "selectFromTree": "Выбрать из дерева"
+    },
+    "common": {
+      "loading": "Загрузка...",
+      "failedToLoadTranslations": "Не удалось загрузить переводы.",
+      "none": "нет"
+    },
+    "altText": {
+      "adminLogo": "Логотип админ-панели"
+    },
+    "validation": {
+      "usernamePattern": "Логин может содержать только латинские буквы, цифры, _ и -.",
+      "invalidEmail": "Пожалуйста, введите корректный email.",
+      "emailRequiredForNotifications": "Email обязателен для отправки уведомлений.",
+      "invalidEmailAddress": "Некорректный адрес email"
+    },
+    "placeholders": {
+      "name": "Имя",
+      "login": "Логин",
+      "emailOptional": "Email (необязательно)",
+      "emailExample": "user@example.com"
+    },
+    "labels": {
+      "administrator": "Администратор",
+      "sendAuthByEmail": "Отправить данные для входа по email",
+      "emailNotifications": "Уведомления",
+      "emailNotificationsSubtitle": "Email уведомления",
+      "folderAccess": "Доступы",
+      "folderAccessSubtitle": "Доступ к папкам"
+    },
+    "modals": {
+      "enterEmailTitle": "Введите email"
+    }   
   }
 }
