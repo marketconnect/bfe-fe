@@ -689,6 +689,15 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       </div>
     )}
   </div>
+  <button
+    onClick={fetchContent}
+    disabled={loading}
+    className="ml-2 flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+    title={dictionary.adminPanel.fileManager.refresh}
+  >
+    <span className={`${loading ? 'animate-spin' : ''}`}>↻</span>
+    <span>{loading ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
+  </button>
 </div>
 <input type="file" multiple ref={fileInputRef} onChange={(e) => startUpload(e.target.files)} className="hidden" />
 
@@ -1106,6 +1115,7 @@ const AdminPanel: React.FC = () => {
   const [view, setView] = useState<'users' | 'files' | 'settings'>('files');
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
+  const [usersRefreshing, setUsersRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
   const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
@@ -1185,6 +1195,16 @@ const AdminPanel: React.FC = () => {
       setAllFolders(folderData.folders || []);
     } catch (err: any) {
       console.error(`${dictionary?.adminPanel?.errors?.fetchFolders || 'Failed to fetch folder list'}: ${err.message}`);
+    }
+  };
+
+  const refreshUsers = async () => {
+    if (!token) return;
+    setUsersRefreshing(true);
+    try {
+      await Promise.all([fetchUsers(), fetchAllFolders()]);
+    } finally {
+      setUsersRefreshing(false);
     }
   };
 
@@ -1584,7 +1604,17 @@ const AdminPanel: React.FC = () => {
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4 md:mx-8" role="alert">{error}</div>}
           <div className="w-full">
-            <div className="flex justify-end mb-6 mt-8 mx-3 md:mx-4">
+            <div className="flex justify-end items-center gap-2 mb-6 mt-8 mx-3 md:mx-4">
+              <button
+                type="button"
+                onClick={refreshUsers}
+                className="btn-secondary flex items-center space-x-2"
+                disabled={usersLoading || usersRefreshing}
+                title={dictionary.adminPanel.fileManager.refresh}
+              >
+                <span className={`${usersLoading || usersRefreshing ? 'animate-spin' : ''}`}>↻</span>
+                <span>{(usersLoading || usersRefreshing) ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setShowCreateDrawer(true)}
