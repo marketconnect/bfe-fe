@@ -1270,7 +1270,7 @@ const AdminPanel: React.FC = () => {
   const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault();
     if (!token) return;
-
+    setError('');
     const errors: { username?: string; email?: string; } = {};
     if (!/^[a-zA-Z0-9_-]+$/.test(newUserForm.username)) {
       errors.username = 'Логин может содержать только латинские буквы, цифры, _ и -.';
@@ -1288,6 +1288,8 @@ const AdminPanel: React.FC = () => {
 
     try {
       const response = await api.createUser(token, newUserForm.username, newUserForm.password, newUserForm.alias, newUserForm.email, newUserForm.is_admin, newUserForm.sendAuthByEmail, newUserForm.notifyByEmail);
+      // Закрываем панель при успешном создании
+      setShowCreateDrawer(false);
       showMessage(dictionary.adminPanel.messages.userCreated.replace('{username}', newUserForm.username));
       const createdUsername = newUserForm.username;
       setNewUserForm({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
@@ -2092,6 +2094,7 @@ const AdminPanel: React.FC = () => {
                   <label htmlFor="notifyByEmail" className={!newUserForm.email ? 'text-gray-400' : ''}>{dictionary.adminPanel.notifyByEmailLabel}</label>
                 </div>
               )}
+              {error && <div className="text-red-500 text-sm p-3 bg-red-50 rounded-md" role="alert">{error}</div>}
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setShowCreateDrawer(false)} className="btn-secondary">{dictionary.adminPanel.users.createUser.closeDrawer}</button>
                 <button type="submit" className="btn-primary">{dictionary.adminPanel.createUserButton}</button>
