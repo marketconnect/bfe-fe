@@ -1103,7 +1103,6 @@ const AdminPanel: React.FC = () => {
   const [view, setView] = useState<'users' | 'files' | 'settings'>('files');
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
-  const [usersViewMode, setUsersViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
   const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
@@ -1537,7 +1536,7 @@ const AdminPanel: React.FC = () => {
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4 md:mx-8" role="alert">{error}</div>}
           <div className="w-full">
-            <div className="flex justify-end mb-6 mt-8 px-4 md:px-8">
+            <div className="flex justify-end mb-6 mt-8 mx-3 md:mx-4">
               <button
                 type="button"
                 onClick={() => setShowCreateDrawer(true)}
@@ -1546,7 +1545,7 @@ const AdminPanel: React.FC = () => {
                 {dictionary.adminPanel.users.toolbar.createUser}
               </button>
             </div>
-            <div className="mb-6 px-4 md:px-8">
+            <div className="mb-6 mx-3 md:mx-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                   <input
@@ -1557,22 +1556,6 @@ const AdminPanel: React.FC = () => {
                     className="w-full sm:w-64 p-2 border rounded-md bg-white"
                     aria-label={dictionary.adminPanel.users.toolbar.searchPlaceholder}
                   />
-                  <div className="inline-flex rounded-md border overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setUsersViewMode('cards')}
-                      className={`px-3 py-2 text-sm ${usersViewMode === 'cards' ? 'bg-bfe-orange text-white' : 'bg-white text-gray-700'}`}
-                    >
-                      {dictionary.adminPanel.users.toolbar.view.cards}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setUsersViewMode('table')}
-                      className={`px-3 py-2 text-sm border-l ${usersViewMode === 'table' ? 'bg-bfe-orange text-white' : 'bg-white text-gray-700'}`}
-                    >
-                      {dictionary.adminPanel.users.toolbar.view.table}
-                    </button>
-                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                   
@@ -1687,7 +1670,7 @@ const AdminPanel: React.FC = () => {
                   </button>
                 </div>
               )}
-              <div className={`${usersViewMode !== 'table' || usersLoading || filteredUsers.length === 0 ? 'hidden' : ''} overflow-x-auto rounded-2xl border border-gray-200/60 mb-8 bg-white/50 backdrop-blur-sm`}>
+              <div className={`${usersLoading || filteredUsers.length === 0 ? 'hidden' : 'hidden md:block'} overflow-x-auto rounded-2xl border border-gray-200/60 mb-8 bg-white/50 backdrop-blur-sm`}>
                 <div className="min-w-full">
                   {/* Table Header */}
                       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 rounded-t-2xl border-b border-gray-200/60">
@@ -1796,7 +1779,7 @@ const AdminPanel: React.FC = () => {
                 </div>
                 </div>
               </div>
-              <div className={`${usersViewMode !== 'cards' || usersLoading || filteredUsers.length === 0 ? 'hidden' : ''} grid grid-cols-1 lg:grid-cols-2 gap-6`}>
+              <div className={`${usersLoading || filteredUsers.length === 0 ? 'hidden' : 'block md:hidden'} grid grid-cols-1 lg:grid-cols-2 gap-6`}>
                 {filteredUsers.map(user => (
                   <div key={user.id} className="group bg-white/95 backdrop-blur-sm border border-gray-200/60 rounded-2xl p-6 ring-1 ring-black/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-[fadeIn_0.3s_ease-in-out]">
                     {/* Card Header */}
