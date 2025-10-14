@@ -1140,6 +1140,9 @@ const AdminPanel: React.FC = () => {
   const [userToReset, setUserToReset] = useState<User | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [allFolders, setAllFolders] = useState<string[]>([]);
+  const [userToPromptForEmail, setUserToPromptForEmail] = useState<User | null>(null);
+  const [promptedEmail, setPromptedEmail] = useState('');
+  const [promptEmailError, setPromptEmailError] = useState('');
   const [showDropdown, setShowDropdown] = useState<{ [key: string]: boolean }>({});
   const [folderPickerOpen, setFolderPickerOpen] = useState(false);
   const [folderPickerUserId, setFolderPickerUserId] = useState<string | null>(null);
@@ -1315,19 +1318,59 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleEmailPromptCancel = () => {
+    setUserToPromptForEmail(null);
+    setPromptedEmail('');
+    setPromptEmailError('');
+  };
+
+  const handleEmailPromptSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!token || !userToPromptForEmail) return;
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(promptedEmail)) {
+      setPromptEmailError('Некорректный адрес email');
+      return;
+    }
+    setPromptEmailError('');
+
+    const originalUsers = [...users];
+    const userIdToUpdate = userToPromptForEmail.id;
+    const newEmail = promptedEmail;
+
+    setUsers(users.map(u => u.id === userIdToUpdate ? { ...u, notifyByEmail: true, email: newEmail } : u));
+    handleEmailPromptCancel();
+
+    try {
+      await api.updateUserNotifySetting(token, userIdToUpdate, true, newEmail);
+      showMessage(dictionary.adminPanel.messages.notificationSettingUpdated.replace('{username}', userToPromptForEmail.alias || userToPromptForEmail.username));
+      fetchUsers();
+    } catch (err) {
+      setUsers(originalUsers);
+      handleError(err, dictionary.adminPanel.errors.notificationSettingUpdateFailed);
+    }
+  };
+
   const handleToggleNotify = async (userIdToUpdate: string, newNotifyValue: boolean) => {
     if (!token) return;
+
+    const userToUpdate = users.find(u => u.id === userIdToUpdate);
+    if (!userToUpdate) return;
+
+    if (newNotifyValue && (!userToUpdate.email || userToUpdate.email.trim() === '')) {
+      setUserToPromptForEmail(userToUpdate);
+      setPromptedEmail('');
+      setPromptEmailError('');
+      return;
+    }
 
     const originalUsers = [...users];
     // Optimistic UI update
     setUsers(users.map(u => u.id === userIdToUpdate ? { ...u, notifyByEmail: newNotifyValue } : u));
 
     try {
-      const userToUpdate = users.find(u => u.id === userIdToUpdate);
-      if (userToUpdate) {
-        await api.updateUserNotifySetting(token, userIdToUpdate, newNotifyValue);
-        showMessage(dictionary.adminPanel.messages.notificationSettingUpdated.replace('{username}', userToUpdate.alias || userToUpdate.username));
-      }
+      await api.updateUserNotifySetting(token, userIdToUpdate, newNotifyValue, userToUpdate.email || '');
+      showMessage(dictionary.adminPanel.messages.notificationSettingUpdated.replace('{username}', userToUpdate.alias || userToUpdate.username));
     } catch (err) {
       // Revert on error
       setUsers(originalUsers);
@@ -1693,7 +1736,6 @@ const AdminPanel: React.FC = () => {
                           </div>
                           <div>
                             <div className="font-semibold text-gray-900">{user.alias || user.username}</div>
-                            <div className="text-xs text-gray-500">ID: {user.id}</div>
                           </div>
                         </div>
                         <div className="text-gray-700 font-mono text-sm">{user.username}</div>
@@ -1805,7 +1847,6 @@ const AdminPanel: React.FC = () => {
                             </svg>
                             <span className="font-mono">{user.username}</span>
                           </div>
-                          <div className="text-xs text-gray-500">ID: {user.id}</div>
                         </div>
                       </div>
                       
@@ -2148,6 +2189,34 @@ const AdminPanel: React.FC = () => {
                 {dictionary.adminPanel.closeButton}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {userToPromptForEmail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-4">Введите email</h2>
+            <form onSubmit={handleEmailPromptSubmit}>
+              <input
+                type="email"
+                value={promptedEmail}
+                onChange={(e) => setPromptedEmail(e.target.value)}
+                placeholder="user@example.com"
+                className="w-full p-2 border rounded"
+                required
+                autoFocus
+              />
+              {promptEmailError && <p className="text-red-500 text-xs mt-1">{promptEmailError}</p>}
+              <div className="flex justify-end space-x-4 mt-4">
+                <button type="button" onClick={handleEmailPromptCancel} className="btn-secondary">
+                  {dictionary.adminPanel.fileManager.cancel}
+                </button>
+                <button type="submit" className="btn-primary">
+                  Сохранить
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

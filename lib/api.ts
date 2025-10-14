@@ -51,7 +51,8 @@ export const createUser = async (
 export const updateUserNotifySetting = async (
   token: string,
   userId: string,
-  notifyByEmail: boolean
+  notifyByEmail: boolean,
+  email: string,
 ): Promise<MessageResponse> => {
   const response = await fetch(`${BASE_PATH}/admin/users/${userId}`, {
     method: 'PUT',
@@ -59,7 +60,7 @@ export const updateUserNotifySetting = async (
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
-    body: JSON.stringify({ notifyByEmail }),
+    body: JSON.stringify({ notifyByEmail, email }),
   });
 
   if (!response.ok) {
