@@ -5,6 +5,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import * as api from '@/lib/api';
+import { getPluralForm } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { User, GetFilesResponse, Upload } from '@/lib/types';
 import useSWR from 'swr';
@@ -1665,7 +1666,17 @@ const AdminPanel: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-full border border-blue-200">
                     <span className="text-sm font-medium text-blue-700">
-                      {dictionary.adminPanel.users.userCount.replace('{count}', String(filteredUsers.length))}
+                      {(() => {
+                        const count = filteredUsers.length;
+                        const userCountDict = dictionary.adminPanel.users.userCount;
+                        if (userCountDict && typeof userCountDict === 'object') {
+                          if (lang === 'ru') {
+                            return `${count} ${getPluralForm(count, userCountDict.one, userCountDict.few, userCountDict.many)}`;
+                          }
+                          return `${count} ${count === 1 ? userCountDict.one : userCountDict.other}`;
+                        }
+                        return `${count} users`; // Fallback
+                      })()}
                     </span>
                   </div>
                 </div>

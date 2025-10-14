@@ -80,8 +80,11 @@
       "badges": { "admin": "Admin" },
       "createUser": { "openDrawer": "Create User", "closeDrawer": "Close" },
       "folderPicker": { "select": "Select" },
-       "description": "Manage users and their access rights",
-      "userCount": "{count} users",
+      "description": "Manage users and their access rights",
+      "userCount": {
+        "one": "user",
+        "other": "users"
+      },
       "table": {
         "user": "User",
         "login": "Login",
