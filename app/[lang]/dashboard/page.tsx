@@ -202,7 +202,7 @@ const DashboardPage = () => {
                 </div>
             </header>
 
-            <main className="flex-1 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto flex flex-col">
                 <div className="flex justify-start px-3 md:px-4 mt-4 mb-2">
                     <button
                         onClick={fetchContent}
@@ -259,7 +259,7 @@ const DashboardPage = () => {
                             ) : isEmpty ? (
                                 <div className="text-center py-10 text-gray-500">В этой папке нет файлов</div>
                             ) : (
-                                <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                                <div className="mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                                     {content?.folders.map(folder => {
                                         const isSelected = selectedFolders.has(folder);
                                         return (

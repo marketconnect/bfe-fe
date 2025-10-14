@@ -784,8 +784,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       </div>
 
       {/* Content */}
-      <div className="px-4 md:px-6 py-4" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      <div className="px-4 py-4" onDragEnter={(e) => { handleDragEvents(e); setIsDragOver(true); }} onDragOver={handleDragEvents} onDragLeave={(e) => { handleDragEvents(e); setIsDragOver(false); }} onDrop={handleDrop}>
+        <div className="mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {/* Folders */}
           {(content?.folders || []).map(folder => {
             const isSelected = selectedFolders.has(folder);
