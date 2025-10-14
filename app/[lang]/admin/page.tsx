@@ -1105,7 +1105,6 @@ const AdminPanel: React.FC = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersViewMode, setUsersViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterRole, setFilterRole] = useState<'all' | 'admins' | 'nonAdmins'>('all');
   const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
   const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
@@ -1119,9 +1118,7 @@ const AdminPanel: React.FC = () => {
         (u.username || '').toLowerCase().includes(q)
       );
     }
-    if (filterRole !== 'all') {
-      data = data.filter(u => (filterRole === 'admins' ? u.isAdmin : !u.isAdmin));
-    }
+
     if (filterNotify !== 'all') {
       data = data.filter(u => (filterNotify === 'on' ? !!u.notifyByEmail : !u.notifyByEmail));
     }
@@ -1131,7 +1128,7 @@ const AdminPanel: React.FC = () => {
       return sortName === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an);
     });
     return data;
-  }, [users, searchQuery, filterRole, filterNotify, sortName]);
+  }, [users, searchQuery, filterNotify, sortName]);
   const [adminForm, setAdminForm] = useState({ username: '', password: '', is_admin: false });
     const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
   const [formErrors, setFormErrors] = useState<{ newUser: { username?: string; email?: string; }, settings: { username?: string; } }>({ newUser: {}, settings: {} });
@@ -1538,9 +1535,9 @@ const AdminPanel: React.FC = () => {
       <main className="flex-1 overflow-y-auto">
         <div className={view === 'users' ? '' : 'hidden'}>
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
-          {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">{error}</div>}
+          {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4 md:mx-8" role="alert">{error}</div>}
           <div className="w-full">
-            <div className="flex justify-end mb-6 mt-8">
+            <div className="flex justify-end mb-6 mt-8 px-4 md:px-8">
               <button
                 type="button"
                 onClick={() => setShowCreateDrawer(true)}
@@ -1549,7 +1546,7 @@ const AdminPanel: React.FC = () => {
                 {dictionary.adminPanel.users.toolbar.createUser}
               </button>
             </div>
-            <div className="mb-6">
+            <div className="mb-6 px-4 md:px-8">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                   <input
@@ -1578,15 +1575,7 @@ const AdminPanel: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                  <select
-                    value={filterRole}
-                    onChange={(e) => setFilterRole(e.target.value as any)}
-                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
-                  >
-                    <option value="all">{dictionary.adminPanel.users.toolbar.filter.role.all}</option>
-                    <option value="admins">{dictionary.adminPanel.users.toolbar.filter.role.admins}</option>
-                    <option value="nonAdmins">{dictionary.adminPanel.users.toolbar.filter.role.nonAdmins}</option>
-                  </select>
+                  
                   <select
                     value={filterNotify}
                     onChange={(e) => setFilterNotify(e.target.value as any)}
@@ -1639,7 +1628,7 @@ const AdminPanel: React.FC = () => {
             </div>
 
             <div className="h-full flex flex-col relative">
-              <div className="flex-1 overflow-y-auto bg-white border border-gray-200 p-6 rounded-lg shadow-sm mt-8 mx-3 md:mx-4 my-1.5">
+              <div className="flex-1 overflow-y-auto bg-white border border-gray-200 p-6 rounded-lg shadow-sm mx-3 md:mx-4 my-1.5">
                 <div className="flex items-center justify-between mb-8">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">{dictionary.adminPanel.manageUsersTitle}</h2>
