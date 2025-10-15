@@ -123,6 +123,9 @@
       "viewers": "Views",
       "neverViewed": "Never viewed",
       "lastViewedAt": "Last viewed",
+      "downloadMethodTitle": "Choose download method",
+      "downloadAsArchive": "Download as archive (.zip)",
+      "downloadFiles": "Download files",
       "access": {
         "read_and_download": "Read & Download",
         "read_only": "Read only"

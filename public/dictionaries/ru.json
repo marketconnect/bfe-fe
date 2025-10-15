@@ -124,6 +124,9 @@
       "viewers": "Просмотры",
       "neverViewed": "Не просматривал",
       "lastViewedAt": "Последний просмотр",
+      "downloadMethodTitle": "Выберите способ скачивания",
+      "downloadAsArchive": "Скачать архивом (.zip)",
+      "downloadFiles": "Скачать файлы",
       "access": {
         "read_and_download": "Чтение и скачивание",
         "read_only": "Только чтение"

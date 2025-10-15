@@ -48,6 +48,7 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showDownloadChoiceModal, setShowDownloadChoiceModal] = useState(false);
   const [viewersOpenFor, setViewersOpenFor] = useState<string | null>(null);
   const viewersHoverTimeout = useRef<number | null>(null);
 
@@ -419,16 +420,128 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownloadIndividually = async () => {
     if (!token) return;
+    setShowDownloadChoiceModal(false);
+    setIsDownloading(true);
+    setError('');
     const filesToDownload = Array.from(selectedFiles);
     const foldersToDownload = Array.from(selectedFolders);
 
-    setIsDownloading(true);
-    setError('');
+ 
+    try {
+      const { urls } = await api.downloadArchive(token, filesToDownload, foldersToDownload);
+      const files = Object.entries(urls);
 
-    // Handle single file download differently
+      if (files.length === 0) {
+        setMessage("Нет файлов для скачивания.");
+        setTimeout(() => setMessage(''), 3000);
+      
+        return;
+      }
+
+      const downloadFile = (url: string, filename: string) => {
+        const link = document.createElement('a');
+        link.href = toProxy(url);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+      };
+      for (let i = 0; i < files.length; i++) {
+        const [key, url] = files[i];
+        const fileName = key.split('/').pop() || key;
+        downloadFile(url as string, fileName);
+        await new Promise(resolve => setTimeout(resolve, 300)); // Delay to help browser
+      }
+
+      handleClearSelection();
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setIsDownloading(false);
+
+        }
+};
+const handleDownloadAsArchive = async () => {
+  if (!token) return;
+  setShowDownloadChoiceModal(false);
+  setIsDownloading(true);
+  setError('');
+  const filesToDownload = Array.from(selectedFiles);
+  const foldersToDownload = Array.from(selectedFolders);
+  try {
+    const { urls } = await api.downloadArchive(token, filesToDownload, foldersToDownload);
+    const files = Object.entries(urls);
+    if (files.length === 0) {
+      setMessage("Нет файлов для скачивания.");
+      setTimeout(() => setMessage(''), 3000);
+      setIsDownloading(false);
+      return;
+    }
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      const failedDownloads: string[] = [];
+      setDownloadProgress({ total: files.length, current: 0, message: 'Начинаем скачивание...' });
+      for (let i = 0; i < files.length; i++) {
+        const [key, url] = files[i];
+        const fileName = key.split('/').pop() || key;
+        setDownloadProgress({ total: files.length, current: i, message: `Скачивание файла ${i + 1} из ${files.length}: ${fileName}` });
+        let zipPath = key;
+        const segments = key.split('/');
+        if (segments.length > 1 && /^\d{16,}$/.test(segments[0])) {
+            zipPath = segments.slice(1).join('/');
+        }
+        try {
+          const response = await fetch(toProxy(url as string));
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const blob = await response.blob();
+          zip.file(zipPath, blob);
+        } catch (e) {
+          console.error(`Failed to download ${key}:`, e);
+          failedDownloads.push(key);
+        }
+      }
+      setDownloadProgress({ total: files.length, current: files.length, message: 'Архивация...' });
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = 'archive.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      if (failedDownloads.length > 0) {
+        setError(`Не удалось скачать ${failedDownloads.length} файлов. Они не были включены в архив.`);
+        setTimeout(() => setError(''), 5000);
+      }
+      handleClearSelection();
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setIsDownloading(false);
+      setDownloadProgress(null);
+    }
+  };
+
+    const handleDownload = async () => {
+    if (!token) return;
+    const filesToDownload = Array.from(selectedFiles);
+    const foldersToDownload = Array.from(selectedFolders);
+    // No selection
+    if (filesToDownload.length === 0 && foldersToDownload.length === 0) {
+      return;
+    }
+    // Handle single file download: direct download
     if (filesToDownload.length === 1 && foldersToDownload.length === 0) {
+      setIsDownloading(true);
+      setError('');
       try {
         const fileKey = filesToDownload[0];
         const freshUrl = await api.getFreshFileUrl(token, fileKey);
@@ -443,80 +556,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       }
       return;
     }
-
-    // Handle archive download for multiple items
-    if (filesToDownload.length === 0 && foldersToDownload.length === 0) {
-      setIsDownloading(false); // Nothing to do
-      return;
-    }
-
-    // New logic for downloading multiple files as a zip
-    try {
-      const { urls } = await api.downloadArchive(token, filesToDownload, foldersToDownload);
-      const files = Object.entries(urls);
-
-      if (files.length === 0) {
-        setMessage("Нет файлов для скачивания.");
-        setTimeout(() => setMessage(''), 3000);
-        setIsDownloading(false);
-        return;
-      }
-
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
-      const failedDownloads: string[] = [];
-
-      setDownloadProgress({ total: files.length, current: 0, message: 'Начинаем скачивание...' });
-
-      for (let i = 0; i < files.length; i++) {
-        const [key, url] = files[i];
-        const fileName = key.split('/').pop() || key;
-        setDownloadProgress({ total: files.length, current: i, message: `Скачивание файла ${i + 1} из ${files.length}: ${fileName}` });
-
-        let zipPath = key;
-        const segments = key.split('/');
-        if (segments.length > 1 && /^\d{16,}$/.test(segments[0])) {
-            zipPath = segments.slice(1).join('/');
-        }
-
-        try {
-          const response = await fetch(toProxy(url as string));
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          const blob = await response.blob();
-          zip.file(zipPath, blob);
-        } catch (e) {
-          console.error(`Failed to download ${key}:`, e);
-          failedDownloads.push(key);
-        }
-      }
-
-      setDownloadProgress({ total: files.length, current: files.length, message: 'Архивация...' });
-
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(zipBlob);
-      link.download = 'archive.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-
-      if (failedDownloads.length > 0) {
-        setError(`Не удалось скачать ${failedDownloads.length} файлов. Они не были включены в архив.`);
-        setTimeout(() => setError(''), 5000);
-      }
-
-      handleClearSelection();
-    } catch (err: any) {
-      setError(err.message);
-      setTimeout(() => setError(''), 5000);
-    } finally {
-      setIsDownloading(false);
-      setDownloadProgress(null);
-    }
+    // Multiple files or any folder selected: show choice modal
+    setShowDownloadChoiceModal(true);
   };
 
 
@@ -1147,6 +1188,40 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
           </div>
         </div>
       )}
+
+      {/* Download Choice Modal */}
+      {showDownloadChoiceModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h2 className="text-2xl font-bold mb-6 text-center">{dictionary.adminPanel.fileManager.downloadMethodTitle}</h2>
+            <div className="flex flex-col space-y-4">
+              <button
+                onClick={handleDownloadAsArchive}
+                className="btn-primary w-full"
+                disabled={isDownloading}
+              >
+                {dictionary.adminPanel.fileManager.downloadAsArchive}
+              </button>
+              <button
+                onClick={handleDownloadIndividually}
+                className="btn-primary w-full"
+                disabled={isDownloading}
+              >
+                {dictionary.adminPanel.fileManager.downloadFiles}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDownloadChoiceModal(false)}
+                className="btn-secondary w-full"
+                disabled={isDownloading}
+              >
+                {dictionary.adminPanel.fileManager.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isMoving && (
         <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
           <div className="text-lg font-semibold">{dictionary.adminPanel.fileManager.moving}</div>
