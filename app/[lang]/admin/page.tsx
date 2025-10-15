@@ -1307,6 +1307,8 @@ const AdminPanel: React.FC = () => {
     });
     return data;
   }, [users, searchQuery]);
+
+
   const [adminForm, setAdminForm] = useState({ username: '', password: '', is_admin: false });
     const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
   const [formErrors, setFormErrors] = useState<{ newUser: { username?: string; email?: string; }, settings: { username?: string; } }>({ newUser: {}, settings: {} });
@@ -1904,11 +1906,12 @@ const AdminPanel: React.FC = () => {
                 <div className="min-w-full">
                   {/* Table Header */}
                       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 rounded-t-2xl border-b border-gray-200/60">
-                        <div className="grid grid-cols-2 md:grid-cols-5 items-center text-sm font-semibold text-gray-700">
+                        <div className="grid grid-cols-2 md:grid-cols-6 items-center text-sm font-semibold text-gray-700">
                           <div>{dictionary.adminPanel.users.table.user}</div>
                           <div>{dictionary.adminPanel.users.table.login}</div>
                           <div className="hidden md:block">{dictionary.adminPanel.users.table.email}</div>
                           <div>{dictionary.adminPanel.users.table.folders}</div>
+                          <div className="text-center">Уведомления</div>
                           <div className="text-right">{dictionary.adminPanel.users.table.actions}</div>
                         </div>
                       </div>
@@ -1916,7 +1919,7 @@ const AdminPanel: React.FC = () => {
                   {/* Table Body */}
                   <div className="divide-y divide-gray-200/60">
                     {filteredUsers.map((user, index) => (
-                      <div key={user.id} className={`grid grid-cols-2 md:grid-cols-5 items-center px-6 py-4 hover:bg-gray-50/80 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white/30' : 'bg-white/50'}`}>
+                      <div key={user.id} className={`grid grid-cols-2 md:grid-cols-6 items-center px-6 py-4 hover:bg-gray-50/80 transition-colors duration-200 ${index % 2 === 0 ? 'bg-white/30' : 'bg-white/50'}`}>
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                             {(user.alias || user.username).charAt(0).toUpperCase()}
@@ -1969,22 +1972,24 @@ const AdminPanel: React.FC = () => {
                             </div>
                           )}
                         </div>
+                        <div className="flex justify-center">
+                          <label className="relative inline-flex items-center cursor-pointer" title="Email уведомления">
+                            <input
+                              type="checkbox"
+                              className="sr-only peer"
+                              checked={user.notifyByEmail}
+                              disabled={user.id === userId || user.isAdmin}
+                              onChange={(e) => handleToggleNotify(user.id, e.target.checked)}
+                            />
+                            <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bfe-green peer-disabled:cursor-not-allowed peer-disabled:opacity-50"></div>
+                          </label>
+                        </div>
                         <div className="flex items-center justify-end gap-2">
-                          <div className="flex items-center space-x-3">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={user.notifyByEmail}
-                                disabled={user.id === userId || user.isAdmin}
-                                onChange={(e) => handleToggleNotify(user.id, e.target.checked)}
-                              />
-                              <div className="relative w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bfe-green peer-disabled:cursor-not-allowed peer-disabled:opacity-50"></div>
-                            </label>
+                          <div className="flex items-center space-x-1">
                             
                             <button
                               onClick={() => setUserToReset(user)}
-                              className="p-2.5 rounded-xl hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-all duration-200 hover:scale-105 group"
+                              className="p-2 rounded-xl hover:bg-blue-50 text-blue-500 hover:text-blue-700 transition-all duration-200 hover:scale-105 group"
                               title={dictionary.adminPanel.resetPasswordButton}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1994,7 +1999,7 @@ const AdminPanel: React.FC = () => {
                             
                             <button
                               onClick={() => handleDeleteUser(user.id)}
-                              className="p-2.5 rounded-xl hover:bg-red-50 text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-105 group"
+                              className="p-2 rounded-xl hover:bg-red-50 text-red-500 hover:text-red-700 transition-all duration-200 hover:scale-105 group"
                               title={dictionary.adminPanel.deleteUserTitle}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -2009,8 +2014,8 @@ const AdminPanel: React.FC = () => {
                 </div>
               </div>
               <div className={`${usersLoading || filteredUsers.length === 0 ? 'hidden' : 'block md:hidden'} grid grid-cols-1 lg:grid-cols-2 gap-6`}>
-                {filteredUsers.map(user => (
-                  <div key={user.id} className="group bg-white/95 backdrop-blur-sm border border-gray-200/60 rounded-2xl p-6 ring-1 ring-black/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-[fadeIn_0.3s_ease-in-out]">
+                  {filteredUsers.map((user) => (
+                  <div key={user.id} className={`group bg-white/95 backdrop-blur-sm border rounded-2xl p-6 ring-1 ring-black/5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-[fadeIn_0.3s_ease-in-out] border-gray-200/60`}>
                     {/* Card Header */}
                     <div className="flex flex-col sm:flex-row gap-4 sm:items-start sm:justify-between mb-6">
                       <div className="flex items-center space-x-4 min-w-0">
@@ -2070,8 +2075,8 @@ const AdminPanel: React.FC = () => {
                             </svg>
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-800">{dictionary.adminPanel.notificationsLabel}</h4>
-                            <p className="text-xs text-gray-600">Email уведомления</p>
+                            <h4 className="font-semibold text-gray-800">{dictionary.adminPanel.labels.emailNotifications}</h4>
+                            <p className="text-xs text-gray-600">{dictionary.adminPanel.labels.emailNotificationsSubtitle}</p>
                           </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
