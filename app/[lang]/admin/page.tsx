@@ -5,7 +5,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import * as api from '@/lib/api';
-import { getPluralForm } from '@/lib/utils';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { User, GetFilesResponse, Upload } from '@/lib/types';
 import useSWR from 'swr';
@@ -64,6 +63,9 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
   const [message, setMessage] = useState('');
   const [accessTypeToSet, setAccessTypeToSet] = useState<'read_only' | 'read_and_download'>('read_only');
   const [isSettingAccess, setIsSettingAccess] = useState(false);
+
+  const [downloadProgress, setDownloadProgress] = useState<{ total: number; current: number; message: string } | null>(null);
+  
 
 
 
@@ -448,16 +450,75 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
       return;
     }
 
+    // New logic for downloading multiple files as a zip
     try {
-      await api.downloadArchive(token, filesToDownload, foldersToDownload);
+      const { urls } = await api.downloadArchive(token, filesToDownload, foldersToDownload);
+      const files = Object.entries(urls);
+
+      if (files.length === 0) {
+        setMessage("Нет файлов для скачивания.");
+        setTimeout(() => setMessage(''), 3000);
+        setIsDownloading(false);
+        return;
+      }
+
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      const failedDownloads: string[] = [];
+
+      setDownloadProgress({ total: files.length, current: 0, message: 'Начинаем скачивание...' });
+
+      for (let i = 0; i < files.length; i++) {
+        const [key, url] = files[i];
+        const fileName = key.split('/').pop() || key;
+        setDownloadProgress({ total: files.length, current: i, message: `Скачивание файла ${i + 1} из ${files.length}: ${fileName}` });
+
+        let zipPath = key;
+        const segments = key.split('/');
+        if (segments.length > 1 && /^\d{16,}$/.test(segments[0])) {
+            zipPath = segments.slice(1).join('/');
+        }
+
+        try {
+          const response = await fetch(toProxy(url as string));
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const blob = await response.blob();
+          zip.file(zipPath, blob);
+        } catch (e) {
+          console.error(`Failed to download ${key}:`, e);
+          failedDownloads.push(key);
+        }
+      }
+
+      setDownloadProgress({ total: files.length, current: files.length, message: 'Архивация...' });
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(zipBlob);
+      link.download = 'archive.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+
+      if (failedDownloads.length > 0) {
+        setError(`Не удалось скачать ${failedDownloads.length} файлов. Они не были включены в архив.`);
+        setTimeout(() => setError(''), 5000);
+      }
+
       handleClearSelection();
     } catch (err: any) {
       setError(err.message);
       setTimeout(() => setError(''), 5000);
     } finally {
       setIsDownloading(false);
+      setDownloadProgress(null);
     }
   };
+
 
   const handleDragStart = (e: React.DragEvent, itemKey: string, isFolder: boolean) => {
     const currentSelectionFiles = new Set(selectedFiles);
@@ -1068,8 +1129,8 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
                   ))}
                 </div>
               )}
+            
             </div>
-
             <div className="flex justify-end space-x-4 mt-4 border-t pt-4">
               <button type="button" onClick={() => setShowCopyModal(false)} className="btn-secondary" disabled={isCopying}>
                 {dictionary.adminPanel.fileManager.cancel}
@@ -1105,6 +1166,21 @@ const FileManager: React.FC<{ dictionary: any }> = ({ dictionary }) => {
           <div className="text-white text-2xl font-bold">{dictionary.adminPanel.fileManager.dropFiles}</div>
         </div>
       )}
+
+      {downloadProgress && (
+        <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg z-50 w-80 border animate-[fadeIn_0.3s_ease-in-out]">
+          <h4 className="font-bold text-sm">Подготовка архива</h4>
+          <p className="text-xs text-gray-600 mt-2 truncate">{downloadProgress.message}</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+            <div
+              className="bg-blue-600 h-2.5 rounded-full"
+              style={{ width: `${(downloadProgress.current / downloadProgress.total) * 100}%` }}
+            ></div>
+          </div>
+          <p className="text-right text-xs mt-1">{downloadProgress.current} / {downloadProgress.total}</p>
+        </div>
+      )}
+
     </div>
   );
 };
@@ -1120,6 +1196,25 @@ const AdminPanel: React.FC = () => {
   const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
   const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
+
+  const getPluralForm = (number: number, one: string, few: string, many: string): string => {
+    let n = Math.abs(number);
+    n %= 100;
+    if (n >= 5 && n <= 20) {
+      return many;
+    }
+    n %= 10;
+    if (n === 1) {
+      return one;
+    }
+    if (n >= 2 && n <= 4) {
+      return few;
+    }
+    return many;
+  };
+
+
+
 
   const filteredUsers = useMemo(() => {
     let data = Array.isArray(users) ? [...users] : [];
@@ -1448,14 +1543,10 @@ const AdminPanel: React.FC = () => {
     }
 
     const user = users.find(u => u.id === targetUserId);
-    if (user && (user.permissions || []).some((p: any) => (p.folderPrefix ?? p.folder_prefix) === folderPrefix)) {
-      handleError({ message: dictionary.adminPanel.errors.permissionExists }, dictionary.adminPanel.errors.addPermission);
-      return;
-    }
-    if (user && (user.permissions || []).some(p => p.folderPrefix === folderPrefix)) {
-      handleError({ message: dictionary.adminPanel.errors.permissionExists }, dictionary.adminPanel.errors.addPermission);
-      return;
-    }
+   if (user && user.permissions.some(p => `${p.adminId}/${p.folderPrefix}` === folderPrefix)) {
+     handleError({ message: dictionary.adminPanel.errors.permissionExists }, dictionary.adminPanel.errors.addPermission);
+     return;
+   }
 
     try {
       await api.assignPermission(token, targetUserId, folderPrefix);
@@ -1790,7 +1881,7 @@ const AdminPanel: React.FC = () => {
                             <div className="flex flex-wrap gap-1 items-center">
                               {user.permissions.map(perm => (
                                 <span key={perm.id} className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 border border-gray-200">
-                                  <span className="font-mono">{formatDisplayPath((perm as any).folderPrefix ?? (perm as any).folder_prefix ?? '')}</span>
+                                  <span className="font-mono">{formatDisplayPath(`${perm.adminId}/${perm.folderPrefix}`)}</span>
                                   <button
                                     onClick={() => handleRevokePermission(perm.id)}
                                     className="ml-1 p-0.5 hover:bg-red-100 rounded text-red-500"
@@ -1969,7 +2060,7 @@ const AdminPanel: React.FC = () => {
                                     <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
                                   </svg>
                                 </div>
-                                <span className="font-mono text-sm text-gray-700 font-medium">{formatDisplayPath((perm as any).folderPrefix ?? (perm as any).folder_prefix ?? '')}</span>
+                                <span className="font-mono text-sm text-gray-700 font-medium">{formatDisplayPath(`${perm.adminId}/${perm.folderPrefix}`)}</span>
                               </div>
                               <button
                                 onClick={() => handleRevokePermission(perm.id)}

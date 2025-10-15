@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import * as api from '@/lib/api';
@@ -51,6 +51,8 @@ const DashboardPage = () => {
     const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
     const [isDownloading, setIsDownloading] = useState(false);
 
+    const [downloadProgress, setDownloadProgress] = useState<{ total: number; current: number; message: string } | null>(null);
+
     const { data: dictionary, error: dictError } = useSWR(`/dictionaries/${lang}.json`, fetcher);
 
     const fetchContent = useCallback(async () => {
@@ -94,13 +96,15 @@ const DashboardPage = () => {
     };
 
     const handleBreadcrumbClick = (index: number) => {
+        const segments = path.split('/').filter(Boolean);
+        const isFirstHidden = segments.length > 0 && /^\d{16,}$/.test(segments[0]);
         if (index === 0) {
             router.push(`/${lang}/dashboard?path=`);
-        } else {
-            const pathSegments = path.split('/').filter(Boolean);
-            const newPath = pathSegments.slice(0, index).join('/') + '/';
-            router.push(`/${lang}/dashboard?path=${newPath}`);
+            return;
         }
+        const sliceEnd = isFirstHidden ? index + 1 : index;
+        const newPath = segments.slice(0, sliceEnd).join('/') + '/';
+        router.push(`/${lang}/dashboard?path=${newPath}`);
     };
 
     const handleFileSelect = (key: string) => {
@@ -148,13 +152,72 @@ const DashboardPage = () => {
             return;
         }
 
+        // New logic for downloading multiple files as a zip
         try {
-            await api.downloadArchive(token, filesToDownload, foldersToDownload);
+            const { urls } = await api.downloadArchive(token, filesToDownload, foldersToDownload);
+            const files = Object.entries(urls);
+
+            if (files.length === 0) {
+                setError("Нет файлов для скачивания.");
+                setTimeout(() => setError(''), 3000);
+                setIsDownloading(false);
+                return;
+            }
+
+            const JSZip = (await import('jszip')).default;
+            const zip = new JSZip();
+            const failedDownloads: string[] = [];
+
+            setDownloadProgress({ total: files.length, current: 0, message: 'Начинаем скачивание...' });
+
+            for (let i = 0; i < files.length; i++) {
+                const [key, url] = files[i];
+                const fileName = key.split('/').pop() || key;
+                setDownloadProgress({ total: files.length, current: i, message: `Скачивание файла ${i + 1} из ${files.length}: ${fileName}` });
+
+                let zipPath = key;
+                const segments = key.split('/');
+                if (segments.length > 1 && /^\d{16,}$/.test(segments[0])) {
+                    zipPath = segments.slice(1).join('/');
+                }
+
+                try {
+                    const response = await fetch(toProxy(url as string));
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const blob = await response.blob();
+                    zip.file(zipPath, blob);
+                } catch (e) {
+                    console.error(`Failed to download ${key}:`, e);
+                    failedDownloads.push(key);
+                }
+            }
+
+            setDownloadProgress({ total: files.length, current: files.length, message: 'Архивация...' });
+
+            const zipBlob = await zip.generateAsync({ type: 'blob' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(zipBlob);
+            link.download = 'archive.zip';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+
+            if (failedDownloads.length > 0) {
+                setError(`Не удалось скачать ${failedDownloads.length} файлов. Они не были включены в архив.`);
+                setTimeout(() => setError(''), 5000);
+            }
+
             handleClearSelection();
         } catch (err: any) {
             setError(err.message);
+            setTimeout(() => setError(''), 5000);
         } finally {
             setIsDownloading(false);
+            setDownloadProgress(null);
         }
     };
 
@@ -176,7 +239,16 @@ const DashboardPage = () => {
     };
 
     const myFilesText = dictionary?.adminPanel?.fileManager?.myFiles || 'Мои файлы';
-    const breadcrumbs = [myFilesText, ...path.split('/').filter(Boolean)];
+
+    const generateBreadcrumbs = (currentPath: string) => {
+        const segments = currentPath.split('/').filter(Boolean);
+        if (segments.length > 0 && /^\d{16,}$/.test(segments[0])) {
+            return [myFilesText, ...segments.slice(1)];
+        }
+        return [myFilesText, ...segments];
+    };
+
+    const breadcrumbs = generateBreadcrumbs(path);
     const hasSelection = selectedFiles.size > 0 || selectedFolders.size > 0;
     const isEmpty = !loading && content && content.files.length === 0 && content.folders.length === 0;
 
@@ -300,6 +372,22 @@ const DashboardPage = () => {
                     )}
                 </div>
             </main>
+
+            {/* Download Progress Indicator */}
+            {downloadProgress && (
+                <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg z-50 w-80 border animate-[fadeIn_0.3s_ease-in-out]">
+                    <h4 className="font-bold text-sm">Подготовка архива</h4>
+                    <p className="text-xs text-gray-600 mt-2 truncate">{downloadProgress.message}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                        <div
+                            className="bg-blue-600 h-2.5 rounded-full"
+                            style={{ width: `${(downloadProgress.current / downloadProgress.total) * 100}%` }}
+                        ></div>
+                    </div>
+                    <p className="text-right text-xs mt-1">{downloadProgress.current} / {downloadProgress.total}</p>
+                </div>
+            )}
+
         </div>
     );
 };
@@ -311,4 +399,3 @@ export default function Dashboard() {
         </ProtectedRoute>
     );
 }
-

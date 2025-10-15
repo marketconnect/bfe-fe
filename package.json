@@ -11,6 +11,7 @@
   "dependencies": {
     "@types/accept-language-parser": "^1.5.8",
     "accept-language-parser": "^1.5.0",
+    "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
     "next": "14.2.4",
     "react": "^18",
@@ -18,6 +19,7 @@
     "swr": "^2.3.4"
   },
   "devDependencies": {
+    "@types/jszip": "^3.4.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

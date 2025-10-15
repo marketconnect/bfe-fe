@@ -1,4 +1,4 @@
-import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse } from './types';
+import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse, RequestArchiveResponse, GetArchiveStatusResponse } from './types';
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -159,7 +159,10 @@ export const getFiles = async (token: string, path: string = ''): Promise<GetFil
   return normalize(raw);
 };
 
-export const downloadArchive = async (token: string, keys: string[], folders: string[]): Promise<void> => {
+export const requestArchive = async (
+  token: string,
+  keys: string[],
+  folders: string[]): Promise<RequestArchiveResponse> => {
   const response = await fetch(`${BASE_PATH}/archive`, {
     method: 'POST',
     headers: {
@@ -174,15 +177,47 @@ export const downloadArchive = async (token: string, keys: string[], folders: st
     throw new Error(errorData.details || errorData.error || 'Failed to download archive');
   }
 
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'archive.zip';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
+  return response.json();
+};
+
+export const getArchiveStatus = async (
+  token: string,
+  jobId: string
+): Promise<GetArchiveStatusResponse> => {
+  const response = await fetch(`${BASE_PATH}/archive/status/${jobId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to get archive status');
+  }
+
+  return response.json();
+};
+
+export const downloadArchive = async (
+  token: string,
+  keys: string[],
+  folders: string[]
+): Promise<{ urls: Record<string, string> }> => {
+  const response = await fetch(`${BASE_PATH}/archive`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ keys, folders }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to get download URLs');
+  }
+
+  return response.json();
 };
 
 export const getAllFolders = async (token: string): Promise<GetAllFoldersResponse> => {
@@ -288,6 +323,7 @@ export const getUsers = async (token: string): Promise<User[]> => {
             createdAt: p.createdAt ?? p.created_at ?? '',
             updatedAt: p.updatedAt ?? p.updated_at ?? '',
             userId: String(p.userId ?? p.user_id),
+            adminId: String(p.adminId ?? p.admin_id ?? ''),
             folderPrefix: p.folderPrefix ?? p.folder_prefix ?? '',
           }))
         : [],

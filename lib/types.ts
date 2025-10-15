@@ -3,6 +3,7 @@ export interface Permission {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  adminId: string;
   folderPrefix: string;
 }
 
@@ -73,5 +74,17 @@ export interface Upload {
   file: File;
   progress: number;
   status: 'pending' | 'uploading' | 'success' | 'error';
+  error?: string;
+}
+
+export interface RequestArchiveResponse {
+  jobId: string;
+  status: string;
+}
+
+export interface GetArchiveStatusResponse {
+  jobId: string;
+  status: string; // PENDING, PROCESSING, COMPLETED, FAILED
+  downloadUrl?: string;
   error?: string;
 }
