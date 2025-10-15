@@ -1193,8 +1193,6 @@ const AdminPanel: React.FC = () => {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersRefreshing, setUsersRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterNotify, setFilterNotify] = useState<'all' | 'on' | 'off'>('all');
-  const [sortName, setSortName] = useState<'asc' | 'desc'>('asc');
   const [showCreateDrawer, setShowCreateDrawer] = useState(false);
 
   const getPluralForm = (number: number, one: string, few: string, many: string): string => {
@@ -1226,16 +1224,14 @@ const AdminPanel: React.FC = () => {
       );
     }
 
-    if (filterNotify !== 'all') {
-      data = data.filter(u => (filterNotify === 'on' ? !!u.notifyByEmail : !u.notifyByEmail));
-    }
+
     data.sort((a, b) => {
       const an = (a.alias || a.username || '').toLowerCase();
       const bn = (b.alias || b.username || '').toLowerCase();
-      return sortName === 'asc' ? an.localeCompare(bn) : bn.localeCompare(an);
+      return an.localeCompare(bn);
     });
     return data;
-  }, [users, searchQuery, filterNotify, sortName]);
+  }, [users, searchQuery]);
   const [adminForm, setAdminForm] = useState({ username: '', password: '', is_admin: false });
     const [newUserForm, setNewUserForm] = useState({ username: '', password: '', alias: '', email: '', is_admin: false, sendAuthByEmail: false, notifyByEmail: false });
   const [formErrors, setFormErrors] = useState<{ newUser: { username?: string; email?: string; }, settings: { username?: string; } }>({ newUser: {}, settings: {} });
@@ -1695,26 +1691,7 @@ const AdminPanel: React.FC = () => {
           {message && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">{message}</div>}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4 md:mx-8" role="alert">{error}</div>}
           <div className="w-full">
-            <div className="flex justify-end items-center gap-2 mb-6 mt-8 mx-3 md:mx-4">
-              <button
-                type="button"
-                onClick={refreshUsers}
-                className="btn-secondary flex items-center space-x-2"
-                disabled={usersLoading || usersRefreshing}
-                title={dictionary.adminPanel.fileManager.refresh}
-              >
-                <span className={`${usersLoading || usersRefreshing ? 'animate-spin' : ''}`}>↻</span>
-                <span>{(usersLoading || usersRefreshing) ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateDrawer(true)}
-                className="btn-primary"
-              >
-                {dictionary.adminPanel.users.toolbar.createUser}
-              </button>
-            </div>
-            <div className="mb-6 mx-3 md:mx-4">
+            <div className="mb-6 mt-8 mx-3 md:mx-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                   <input
@@ -1726,25 +1703,24 @@ const AdminPanel: React.FC = () => {
                     aria-label={dictionary.adminPanel.users.toolbar.searchPlaceholder}
                   />
                 </div>
-                <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
-                  
-                  <select
-                    value={filterNotify}
-                    onChange={(e) => setFilterNotify(e.target.value as any)}
-                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={refreshUsers}
+                    className="btn-secondary flex items-center space-x-2"
+                    disabled={usersLoading || usersRefreshing}
+                    title={dictionary.adminPanel.fileManager.refresh}
                   >
-                    <option value="all">{dictionary.adminPanel.users.toolbar.filter.notify.all}</option>
-                    <option value="on">{dictionary.adminPanel.users.toolbar.filter.notify.on}</option>
-                    <option value="off">{dictionary.adminPanel.users.toolbar.filter.notify.off}</option>
-                  </select>
-                  <select
-                    value={sortName}
-                    onChange={(e) => setSortName(e.target.value as any)}
-                    className="w-full sm:w-auto p-2 border rounded-md bg-white"
+                    <span className={`${usersLoading || usersRefreshing ? 'animate-spin' : ''}`}>↻</span>
+                    <span>{(usersLoading || usersRefreshing) ? dictionary.adminPanel.fileManager.refreshing : dictionary.adminPanel.fileManager.refresh}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateDrawer(true)}
+                    className="btn-primary"
                   >
-                    <option value="asc">{dictionary.adminPanel.users.toolbar.sort.nameAsc}</option>
-                    <option value="desc">{dictionary.adminPanel.users.toolbar.sort.nameDesc}</option>
-                  </select>
+                    {dictionary.adminPanel.users.toolbar.createUser}
+                  </button>
                 </div>
               </div>
             </div>

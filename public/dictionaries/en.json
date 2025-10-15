@@ -64,11 +64,7 @@
       "toolbar": {
         "searchPlaceholder": "Search by name or username",
         "view": { "cards": "Cards", "table": "Table" },
-        "filter": {
-          "role": { "all": "All", "admins": "Admins", "nonAdmins": "Non-admins" },
-          "notify": { "all": "Notifications: All", "on": "Notifications: On", "off": "Notifications: Off" }
-        },
-        "sort": { "nameAsc": "Name A→Z", "nameDesc": "Name Z→A" },
+      
         "createUser": "Create User"
       },
       "empty": {

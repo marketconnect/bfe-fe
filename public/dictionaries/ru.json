@@ -64,11 +64,7 @@
       "toolbar": {
         "searchPlaceholder": "Поиск по имени или логину",
         "view": { "cards": "Карточки", "table": "Таблица" },
-        "filter": {
-          "role": { "all": "Все", "admins": "Администраторы", "nonAdmins": "Не администраторы" },
-          "notify": { "all": "Уведомления: Все", "on": "Уведомления: Вкл", "off": "Уведомления: Выкл" }
-        },
-        "sort": { "nameAsc": "Имя A→Z", "nameDesc": "Имя Z→A" },
+      
         "createUser": "Создать пользователя"
       },
       "empty": {
