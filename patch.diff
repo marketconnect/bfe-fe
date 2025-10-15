@@ -1,0 +1,272 @@
+diff --git a/app/[lang]/dashboard/page.tsx b/app/[lang]/dashboard/page.tsx
+index 1018599..720892a 100644
+--- a/app/[lang]/dashboard/page.tsx
++++ b/app/[lang]/dashboard/page.tsx
+@@ -70,8 +70,9 @@
+     };
+ 
+     const handleFileClick = (file: FileEntry) => {
+-        if (file.accessType === 'read_only') {
+-            return;
++        if (file.accessType === 'read_only') {
++            router.push(`/${lang}/view?fileKey=${encodeURIComponent(file.key)}`);
++            return; 
+         }
+         openFile(file.key);
+     };
+diff --git a/app/[lang]/view/page.tsx b/app/[lang]/view/page.tsx
+new file mode 100644
+index 0000000..8948119
+--- /dev/null
++++ b/app/[lang]/view/page.tsx
+@@ -0,0 +1,85 @@
++'use client';
++
++import React, { Suspense, useEffect, useState } from 'react';
++import { useSearchParams, useRouter, useParams } from 'next/navigation';
++import { useAuth } from '@/hooks/useAuth';
++import * as api from '@/lib/api';
++import ReadOnlyViewer from '@/components/ReadOnlyViewer';
++
++function ViewPageContent() {
++  const { token } = useAuth();
++  const router = useRouter();
++  const params = useParams();
++  const lang = params.lang as string;
++  const searchParams = useSearchParams();
++  const fileKey = searchParams.get('fileKey');
++
++  const [pages, setPages] = useState<string[]>([]);
++  const [isLoading, setIsLoading] = useState(true);
++  const [error, setError] = useState<string | null>(null);
++
++  useEffect(() => {
++    if (!token || !fileKey) {
++      if (!token) router.push(`/${lang}/login`);
++      return;
++    }
++
++    const fetchFile = async () => {
++      setIsLoading(true);
++      setError(null);
++      try {
++        const result = await api.getPresignedFileInfo(token, fileKey);
++        if (result.status === 'converted' && result.pages) {
++          setPages(result.pages.map(p => api.toProxy(p)));
++        } else {
++          throw new Error("Этот файл не может быть открыт в режиме просмотра.");
++        }
++      } catch (err: any) {
++        setError(err.message || "Просмотр поддерживается только для PDF-файлов.");
++      } finally {
++        setIsLoading(false);
++      }
++    };
++
++    fetchFile();
++  }, [token, fileKey, router, lang]);
++
++  const handleClose = () => {
++    router.back();
++  };
++
++  if (isLoading) {
++    return (
++      <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
++        <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
++      </div>
++    );
++  }
++
++  if (error) {
++    return (
++      <div className="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
++        <div className="bg-white p-8 rounded-lg shadow-xl text-center">
++          <h2 className="text-xl font-bold text-red-600 mb-4">Ошибка</h2>
++          <p className="text-gray-700 mb-6">{error}</p>
++          <button onClick={handleClose} className="btn-primary">
++            Назад
++          </button>
++        </div>
++      </div>
++    );
++  }
++
++  return (
++    <ReadOnlyViewer
++      fileName={fileKey?.split('/').pop() || 'File'}
++      pages={pages}
++      onClose={handleClose}
++    />
++  );
++}
++
++export default function ViewPage() {
++  return (
++    <Suspense fallback={<div>Loading...</div>}>
++      <ViewPageContent />
++    </Suspense>
++  );
++}
+diff --git a/components/ReadOnlyViewer.tsx b/components/ReadOnlyViewer.tsx
+new file mode 100644
+index 0000000..1875868
+--- /dev/null
++++ b/components/ReadOnlyViewer.tsx
+@@ -0,0 +1,85 @@
++'use client';
++
++import React, { useState, useEffect, useRef, useCallback } from 'react';
++
++interface ReadOnlyViewerProps {
++  fileName: string;
++  pages: string[];
++  onClose: () => void;
++}
++
++const ReadOnlyViewer: React.FC<ReadOnlyViewerProps> = ({ fileName, pages, onClose }) => {
++  const [currentPage, setCurrentPage] = useState(1);
++  const scrollContainerRef = useRef<HTMLDivElement>(null);
++  const pageRefs = useRef<(HTMLImageElement | null)[]>([]);
++
++  useEffect(() => {
++    const handleKeyDown = (event: KeyboardEvent) => {
++      if (event.key === 'Escape') {
++        onClose();
++      }
++    };
++    window.addEventListener('keydown', handleKeyDown);
++    return () => {
++      window.removeEventListener('keydown', handleKeyDown);
++    };
++  }, [onClose]);
++
++  const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
++    entries.forEach(entry => {
++      if (entry.isIntersecting) {
++        const pageNum = parseInt(entry.target.getAttribute('data-page-num') || '0', 10);
++        if (pageNum) {
++          setCurrentPage(pageNum);
++        }
++      }
++    });
++  }, []);
++
++  useEffect(() => {
++    const observer = new IntersectionObserver(observerCallback, {
++      root: scrollContainerRef.current,
++      threshold: 0.5, // 50% of the page must be visible
++    });
++
++    pageRefs.current.forEach(ref => {
++      if (ref) observer.observe(ref);
++    });
++
++    return () => {
++      pageRefs.current.forEach(ref => {
++        if (ref) observer.unobserve(ref);
++      });
++    };
++  }, [pages, observerCallback]);
++
++
++  return (
++    <div className="fixed inset-0 bg-gray-800 bg-opacity-90 z-50 flex flex-col">
++      {/* Header */}
++      <header className="flex items-center justify-between p-4 bg-gray-900 text-white shadow-lg flex-shrink-0">
++        <h1 className="text-lg font-semibold truncate" title={fileName}>{fileName}</h1>
++        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-700 transition-colors" aria-label="Close viewer">
++          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
++            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
++          </svg>
++        </button>
++      </header>
++
++      {/* Content */}
++      <main ref={scrollContainerRef} className="flex-1 overflow-y-auto text-center py-4">
++        <div className="flex flex-col items-center space-y-4">
++          {pages.map((pageUrl, index) => (
++            <img
++              key={index}
++              ref={el => pageRefs.current[index] = el}
++              data-page-num={index + 1}
++              src={pageUrl}
++              alt={`Page ${index + 1}`}
++              className="max-w-full h-auto bg-white shadow-lg"
++            />
++          ))}
++        </div>
++      </main>
++
++      {/* Footer */}
++      <footer className="p-2 bg-gray-900 text-white text-center text-sm flex-shrink-0">
++        Страница {currentPage} из {pages.length}
++      </footer>
++    </div>
++  );
++};
++
++export default ReadOnlyViewer;
+diff --git a/lib/api.ts b/lib/api.ts
+index 548332a..8348123 100644
+--- a/lib/api.ts
++++ b/lib/api.ts
+@@ -1,4 +1,4 @@
+-import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse, RequestArchiveResponse, GetArchiveStatusResponse } from './types';
++import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse, RequestArchiveResponse, GetArchiveStatusResponse, PresignedInfoResponse } from './types';
+ 
+ // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+@@ -345,6 +345,21 @@
+   return data.url as string;
+ };
+ 
++export const getPresignedFileInfo = async (token: string, key: string): Promise<PresignedInfoResponse> => {
++  const qs = new URLSearchParams({ key });
++  const response = await fetch(`${BASE_PATH}/files/presign?` + qs.toString(), {
++    headers: { 'Authorization': `Bearer ${token}` },
++  });
++  if (!response.ok) {
++    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
++    throw new Error(errorData.details || errorData.error || 'Failed to presign file info');
++  }
++  return response.json();
++};
++
+ export const deleteItems = async (token: string, keys: string[], folders: string[]): Promise<MessageResponse> => {
+   const response = await fetch(`${BASE_PATH}/admin/storage/items`, {
+     method: 'DELETE',
+@@ -402,3 +417,15 @@
+ 
+   return response.json();
+ };
++
++export const toProxy = (url: string) => {
++  try {
++      const u = new URL(url);
++      if (u.hostname === 'storage.yandexcloud.net') {
++          return `/s3proxy${u.pathname}${u.search}`;
++      }
++      return url;
++  } catch {
++      return url;
++  }
++};
+diff --git a/lib/types.ts b/lib/types.ts
+index 9582103..2967650 100644
+--- a/lib/types.ts
++++ b/lib/types.ts
+@@ -87,3 +87,14 @@
+   downloadUrl?: string;
+   error?: string;
+ }
++
++export type PresignedInfoResponse = {
++  url: string;
++  status?: never;
++  pages?: never;
++} | {
++  url?: never;
++  status: 'converted';
++  pages: string[];
++};
