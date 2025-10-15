@@ -90,7 +90,8 @@ const DashboardPage = () => {
 
     const handleFileClick = (file: FileEntry) => {
         if (file.accessType === 'read_only') {
-            return;
+            router.push(`/${lang}/view?fileKey=${encodeURIComponent(file.key)}`);
+            return; 
         }
         openFile(file.key);
     };

@@ -1,4 +1,4 @@
-import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse, RequestArchiveResponse, GetArchiveStatusResponse } from './types';
+import { User, LoginResponse, CreateUserResponse, ResetPasswordResponse, MessageResponse, GetFilesResponse, GetAllFoldersResponse, GenerateUploadUrlResponse, RequestArchiveResponse, GetArchiveStatusResponse, PresignedInfoResponse } from './types';
 
 // const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -419,6 +419,31 @@ export const getFreshFileUrl = async (token: string, key: string): Promise<strin
   const data = await response.json();
   return data.url as string;
 };
+
+export const getPresignedFileInfo = async (token: string, key: string): Promise<PresignedInfoResponse> => {
+  const qs = new URLSearchParams({ key });
+  const response = await fetch(`${BASE_PATH}/files/presign?` + qs.toString(), {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+    throw new Error(errorData.details || errorData.error || 'Failed to presign file info');
+  }
+  return response.json();
+};
+
+export const toProxy = (url: string) => {
+  try {
+      const u = new URL(url);
+      if (u.hostname === 'storage.yandexcloud.net') {
+          return `/s3proxy${u.pathname}${u.search}`;
+      }
+      return url;
+  } catch {
+      return url;
+  }
+};
+
 
 export const deleteItems = async (token: string, keys: string[], folders: string[]): Promise<MessageResponse> => {
   const response = await fetch(`${BASE_PATH}/admin/storage/items`, {

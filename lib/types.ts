@@ -88,3 +88,13 @@ export interface GetArchiveStatusResponse {
   downloadUrl?: string;
   error?: string;
 }
+
+export type PresignedInfoResponse = {
+  url: string;
+  status?: never;
+  pages?: never;
+} | {
+  url?: never;
+  status: 'converted';
+  pages: string[];
+};
