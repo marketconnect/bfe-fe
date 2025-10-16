@@ -354,7 +354,14 @@ const DashboardPage = () => {
                                         const isReadOnly = file.accessType === 'read_only';
                                         return (
                                             <div key={file.key} className={`group relative flex flex-col items-center p-4 rounded-lg transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`}>
-                                                <div onClick={() => handleFileClick(file)} className={`flex flex-col items-center ${!isReadOnly ? 'cursor-pointer' : 'cursor-default'}`}>
+                                                {isReadOnly && (
+                                                    <span className="absolute top-2 left-2 p-1 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center" title="Только для чтения">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                )}
+                                                <div onClick={() => handleFileClick(file)} className="flex flex-col items-center cursor-pointer">
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
                                                     <span className="mt-2 text-sm text-center truncate w-full" title={file.key.split('/').pop()}>{file.key.split('/').pop()}</span>
                                                     {file.createdAt && <div className="text-xs text-gray-500 mt-1">{formatDate(file.createdAt)}</div>}

@@ -55,7 +55,10 @@ const ReadOnlyViewer: React.FC<ReadOnlyViewerProps> = ({ fileName, pages, onClos
 
 
   return (
-    <div className="fixed inset-0 bg-gray-800 bg-opacity-90 z-50 flex flex-col">
+      <div
+          className="fixed inset-0 bg-gray-800 bg-opacity-90 z-50 flex flex-col"
+          onContextMenu={(e) => e.preventDefault()}
+      >
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-gray-900 text-white shadow-lg flex-shrink-0">
         <h1 className="text-lg font-semibold truncate" title={fileName}>{fileName}</h1>
@@ -77,6 +80,7 @@ const ReadOnlyViewer: React.FC<ReadOnlyViewerProps> = ({ fileName, pages, onClos
               src={pageUrl}
               alt={`Page ${index + 1}`}
               className="max-w-full h-auto bg-white shadow-lg"
+              onDragStart={(e) => e.preventDefault()}
             />
           ))}
         </div>
