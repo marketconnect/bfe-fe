@@ -834,7 +834,7 @@ const handleDownloadAsArchive = async () => {
     </div>
     <div className="flex flex-col md:flex-row md:items-center gap-2 min-w-0 w-full md:w-auto">
       <div className="flex items-center gap-2 w-full md:w-auto">
-        <label className="text-sm text-gray-700 truncate flex-1">{dictionary.adminPanel.fileManager.setAccess}</label>
+        <label className="text-sm text-gray-700 truncate">{dictionary.adminPanel.fileManager.setAccess}</label>
         <select
           value={accessTypeToSet}
           onChange={(e) => setAccessTypeToSet(e.target.value as 'read_only' | 'read_and_download')}
